@@ -1,0 +1,491 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#172f39"><title>つくログ</title><meta name="apple-mobile-web-app-title" content="つくログ"><link rel="apple-touch-icon" sizes="512x512" href="./tsukulog_icon_v0.4.2_up.png"><link rel="icon" type="image/png" sizes="512x512" href="./tsukulog_icon_v0.4.2_up.png"><meta name="application-name" content="つくログ"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="default"><style>
+:root{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Kaku Gothic ProN',sans-serif;color:#17323a;background:#f3f7f6}*{box-sizing:border-box}body{margin:0}button,input,select,textarea{font:inherit}button{cursor:pointer}header{background:#173d43;color:white;padding:calc(24px + env(safe-area-inset-top, 0px)) 18px 20px;border-radius:0 0 25px 25px}header small{color:#bde7da;letter-spacing:.08em}h1{font-size:26px;margin:8px 0 4px}header p{margin:0;color:#cce3de;font-size:13px}.container{max-width:760px;margin:auto;padding:18px 14px 95px}nav{display:flex;gap:8px;overflow-x:auto;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;padding:4px 0 16px;scrollbar-width:thin}nav button{border:0;border-radius:30px;background:#e1eae8;color:#29505a;padding:11px 17px;white-space:nowrap;font-weight:700}nav button.active{background:#206e67;color:white}.card{background:white;border:1px solid #e4eceb;border-radius:19px;padding:18px;margin-bottom:14px;box-shadow:0 3px 15px #0b3d3010}h2{font-size:19px;margin:0 0 12px}h3{font-size:16px;margin:0 0 8px}.muted{color:#6b8184;font-size:13px;line-height:1.7}.btn{border:0;border-radius:12px;background:#206e67;color:white;padding:12px 16px;font-weight:700}.btn.secondary{background:#e5f2ef;color:#206e67}.btn.warn{background:#fff0ed;color:#a33b30}.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.row>*{min-width:0}.field{display:block;margin:12px 0;font-weight:700;font-size:13px}.field input,.field select,.field textarea{display:block;width:100%;border:1px solid #cfdcda;border-radius:11px;padding:12px;margin-top:6px;background:#fff;color:#17323a;font-weight:400}.field textarea{min-height:94px;resize:vertical}.item{border:1px solid #e3ece9;border-radius:12px;padding:12px;margin:9px 0}.itemhead{display:flex;justify-content:space-between;gap:8px;align-items:center}.tag{display:inline-block;background:#e5f2ed;color:#226457;font-size:12px;border-radius:12px;padding:4px 9px}.snippet{white-space:pre-wrap;overflow-wrap:anywhere;font-size:14px;color:#3a555a;background:#f4f7f6;border-radius:10px;padding:10px;max-height:140px;overflow:auto}.thumb{height:105px;width:105px;object-fit:contain;background:#f2f6f5;border-radius:11px;border:1px solid #e4eceb}.hide{display:none!important}.empty{text-align:center;padding:24px 8px;color:#7b9191}.stat{display:grid;grid-template-columns:1fr 1fr;gap:10px}.stat .card{margin:0}.stat strong{display:block;font-size:28px;margin:7px 0;color:#166a63}.danger{color:#a33b30}footer{font-size:12px;text-align:center;color:#819493;margin:24px 0}#toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:#173d43;color:white;border-radius:30px;padding:12px 20px;display:none;z-index:5;white-space:nowrap;max-width:95vw}a{color:#17746b} .line{height:1px;background:#e6eeec;margin:15px 0}
+
+/* v0.2.1: iPhoneのホーム画面表示専用の視認性・安全領域修正 */
+nav{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;overflow:visible}
+nav button{min-width:0;white-space:normal;padding:11px 6px;line-height:1.35;overflow-wrap:anywhere}
+@media(max-width:560px){
+ nav{grid-template-columns:repeat(2,minmax(0,1fr))}
+ nav button{min-height:46px}
+}
+@media (display-mode:standalone){
+ body::before{content:"";position:fixed;top:0;left:0;right:0;height:env(safe-area-inset-top,0px);background:#f3f7f6;z-index:20;pointer-events:none}
+ header{padding-top:calc(16px + env(safe-area-inset-top,0px))}
+ #toast{bottom:calc(22px + env(safe-area-inset-bottom,0px))}
+}
+.custom{margin-top:18px;padding:12px;border:1px solid #dce9e6;border-radius:12px}.custom summary{cursor:pointer;font-weight:700}.custom input{min-width:130px;max-width:100%;flex:1}.chip{border:1px solid #cbdedb;background:#edf6f3;color:#205f5b;border-radius:18px;padding:8px 10px}.extra{padding-top:10px;align-items:center}.btn:disabled{opacity:.4;cursor:not-allowed}
+
+.rename-overlay{position:fixed;inset:0;background:#0009;z-index:30;display:flex;align-items:center;justify-content:center;padding:20px}.rename-overlay.hide{display:none}.rename-panel{background:#fff;border-radius:18px;padding:20px;width:min(100%,440px);box-shadow:0 12px 35px #0003}.rename-panel h2{margin-top:0}.rename-panel input{font-size:16px;width:100%}.custom{margin:12px 0}.custom .row{margin-top:8px}
+
+.product-heading{flex-wrap:wrap;gap:10px}.product-heading h2{margin:0}.product-actions{display:flex;gap:8px;align-items:center;flex-wrap:nowrap}.product-actions .btn{white-space:nowrap;padding:10px 12px;font-size:14px}.product-heading .custom{width:100%}
+@media(max-width:370px){.product-heading h2{width:100%}.product-actions{width:100%;justify-content:flex-end}}
+
+#toast{max-width:calc(100vw - 32px);width:max-content;white-space:normal;overflow-wrap:anywhere;text-align:center;left:50%;transform:translateX(-50%)}
+
+.image-stack{display:grid;gap:9px;margin:12px 0}.image-row{display:flex;align-items:center;gap:10px;min-width:0;border:1px solid #dce9e6;border-radius:12px;padding:8px}.image-row img{width:58px;height:58px;object-fit:contain;border-radius:8px;background:#f3f7f6;flex-shrink:0}.image-name{flex:1;min-width:0;overflow-wrap:anywhere;font-size:13px}.image-row button{flex-shrink:0}.image-gallery{display:flex;flex-wrap:wrap;gap:9px;margin:10px 0}.image-gallery figure{margin:0;width:112px;max-width:45%}.image-gallery img{height:90px;width:100%;object-fit:contain;background:#f3f7f6;border-radius:9px}.image-gallery figcaption{font-size:11px;overflow-wrap:anywhere;color:#647e81}.image-gallery button{padding:7px 8px;font-size:12px;margin-top:4px}
+
+/* v0.3.7 image preview and mobile-safe notifications */
+#toast{white-space:normal;overflow-wrap:anywhere;width:max-content;max-width:calc(100vw - 32px);text-align:center;line-height:1.45;bottom:calc(20px + env(safe-area-inset-bottom,0px));padding:10px 16px}
+.image-gallery figure img{cursor:zoom-in}
+.preview-overlay{position:fixed;inset:0;z-index:1000;background:rgba(9,23,27,.95);display:flex;flex-direction:column;justify-content:center;padding:calc(14px + env(safe-area-inset-top,0px)) 14px calc(16px + env(safe-area-inset-bottom,0px));color:#fff}
+.preview-overlay.hide{display:none!important}
+.preview-head{display:flex;align-items:center;gap:10px;justify-content:space-between;min-height:46px}
+.preview-name{font-size:14px;overflow-wrap:anywhere;flex:1;min-width:0}
+.preview-overlay button{min-height:44px;border:1px solid #9db5af;background:#294a4e;color:white;border-radius:12px;padding:9px 14px;font-weight:700}
+.preview-overlay button:disabled{opacity:.35}
+.preview-body{min-height:0;flex:1;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.preview-body img{width:100%;height:100%;object-fit:contain}
+.preview-actions{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:8px}
+.preview-actions span{font-size:14px;font-variant-numeric:tabular-nums}
+body.preview-open{overflow:hidden}
+
+/* v0.3.8: vault action hierarchy only. No persistence changes. */
+.item-v038 .item-head-v038{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:12px}
+.item-v038 .item-heading-v038{display:flex;flex-direction:column;align-items:flex-start;gap:6px;min-width:0;flex:1}
+.item-v038 .item-heading-v038 strong{overflow-wrap:anywhere;max-width:100%}
+.item-v038 .status-v038{white-space:nowrap;padding:6px 12px;border-radius:999px;font-weight:700;font-size:13px;flex:none}
+.item-v038 .status-draft-v038{background:#e5f2ed;color:#24695e}
+.item-v038 .status-locked-v038{background:#dcece7;color:#15544d}
+.item-v038 .actions-v038{display:flex;flex-direction:column;gap:10px;margin-top:14px}
+.item-v038 .action-pair-v038{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.item-v038 .action-pair-v038 .btn{width:100%;min-width:0;min-height:46px;white-space:normal;overflow-wrap:anywhere;padding:10px 8px}
+.item-v038 .action-placeholder-v038{display:block}
+.item-v038 .action-lock-v038{width:100%;min-height:46px;white-space:normal}
+.item-v038 .action-danger-v038{border-top:1px solid #e4eceb;margin-top:6px;padding-top:12px;display:flex;justify-content:flex-end}
+.item-v038 .action-danger-v038 .btn{min-width:92px}
+@media(max-width:370px){.item-v038 .action-pair-v038{gap:6px}.item-v038 .action-pair-v038 .btn{font-size:13px}}
+
+/* v0.3.9: compact accordion in vault only; storage schema unchanged */
+.item-v039{padding:0;overflow:hidden}
+.item-v039 .vault-summary{display:flex;align-items:center;gap:10px;min-height:56px;padding:12px 14px;width:100%;background:transparent;color:inherit;border:0;text-align:left;cursor:pointer;font:inherit}
+.item-v039 .vault-summary:focus-visible{outline:3px solid #237b71;outline-offset:-3px}
+.item-v039 .vault-summary .vault-name{flex:1;min-width:0;font-weight:750;overflow-wrap:anywhere}
+.item-v039 .vault-summary .vault-chevron{flex:none;color:#4c7974;font-size:17px}
+.item-v039 .vault-summary .status-v038{font-size:12px;padding:5px 9px}
+.item-v039 .vault-details{padding:12px 14px 16px;border-top:1px solid #dce9e6}
+.item-v039 .vault-location{margin-bottom:9px}
+.item-v039 .vault-details .actions-v038{margin-top:14px}
+@media(max-width:370px){.item-v039 .vault-summary{gap:6px;padding:11px 9px}.item-v039 .vault-summary .status-v038{font-size:11px}}
+
+.safe-panel{background:#edf5f2;border:1px solid #c8ded6;border-radius:14px;padding:14px;margin:12px 0;line-height:1.8;color:#173d43}.safe-panel.warning{background:#fff5e3;border-color:#eed7a2}.safe-panel strong{font-size:16px}.safe-panel.hide{display:none}.safe-panel p{margin:6px 0}#restoreAgreeLabel input{width:auto;display:inline-block;vertical-align:middle}#deleteConfirmText{width:100%;margin:6px 0 12px}button:disabled{opacity:.45;cursor:not-allowed}
+.product-search-v045{margin:12px 0 14px;padding:12px;background:#f3f8f6;border:1px solid #dbe8e3;border-radius:13px}.product-search-v045 .field{margin:6px 0 10px}.product-filter-grid-v045{display:grid;grid-template-columns:1fr 1fr;gap:10px}.product-filter-foot-v045{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}.product-filter-foot-v045 .btn{padding:9px 12px;font-size:13px}@media(max-width:350px){.product-filter-grid-v045{grid-template-columns:1fr}}
+
+/* v0.4.6 product list accordion: collapsed by default, only one open */
+.product-accordion-v046{padding:0;overflow:hidden}
+.product-summary-v046{display:flex;align-items:center;gap:10px;flex-wrap:wrap;cursor:pointer;padding:15px 14px;list-style:none;min-height:58px}
+.product-summary-v046::-webkit-details-marker{display:none}
+.product-summary-v046::before{content:'▸';color:#4d7975;font-size:13px}
+.product-accordion-v046[open]>.product-summary-v046::before{content:'▾'}
+.product-name-v046{font-weight:750;flex:1;min-width:115px;overflow-wrap:anywhere}
+.product-meta-v046{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end}
+.product-meta-v046 .tag{font-size:11px;white-space:normal;text-align:center}
+.product-body-v046{padding:2px 14px 15px;border-top:1px solid #e2ece9}
+@media(max-width:420px){.product-summary-v046{gap:7px;padding:13px 10px}.product-body-v046{padding:2px 10px 12px}.product-meta-v046 .tag{font-size:10px}}
+</style><style id="product-related-v043-css">
+.product-related-v043{margin-top:12px;border:1px solid #d9e7e4;border-radius:14px;background:#f5faf8;padding:10px}
+.product-related-head-v043{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px}
+.related-link-v043{width:100%;min-height:44px;text-align:left;display:flex;align-items:center;gap:8px;padding:10px 7px;background:white;border:1px solid #dce9e6;border-radius:10px;margin:6px 0;color:#213b40;font:inherit;cursor:pointer}
+.related-name-v043{flex:1;min-width:0;overflow-wrap:anywhere;font-weight:650}
+.related-empty-v043{margin:6px 0 2px}
+</style><style id="product-timeline-v044-css">
+.timeline-tools-v044{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:8px 0 10px;flex-wrap:wrap}
+.timeline-tools-v044 select{width:auto;max-width:150px;min-height:42px;padding:7px 10px;background:#fff;border:1px solid #ccdbd7;border-radius:10px;color:#17323a}
+.timeline-entry-v044{gap:8px;align-items:center}
+.timeline-main-v044{display:flex;flex-direction:column;gap:3px;flex:1;min-width:0}
+.timeline-date-v044{font-size:12px;color:#667e7a;line-height:1.5}
+</style><style id="vault-search-v047-css">.vault-search-v047{margin:14px 0 16px;padding:14px;border:1px solid #d8e5e2;border-radius:16px;background:#f1f7f5}.vault-search-v047 .field{margin:0}.vault-search-foot-v047{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-top:10px}.vault-search-foot-v047 .btn{padding:9px 12px}.vault-search-v047 input{width:100%}</style></head><body><header><small>MY CREATIVE WORKSPACE</small><h1>つくログ <span style="font-size:20px">✦</span></h1><p>つくる・残す・育てる。デジタル作品の管理ノート</p></header><main class="container"><nav><button data-tab="home" class="active">ホーム</button><button data-tab="products">作品管理</button><button data-tab="backup">バックアップ</button></nav>
+<section id="home"><div class="stat"><div class="card">登録商品<strong id="countProducts">0</strong><span class="muted">作品・記事など</span></div><div class="card">保管アイテム<strong id="countItems">0</strong><span class="muted">文章・画像</span></div></div><div class="card"><h2>今日の制作を記録しよう</h2><p class="muted">商品別に文章や基準画像を整理できます。登録内容はこのブラウザ内に保存されます。</p><div class="row"><button class="btn" onclick="tab('products');showProductForm()">＋ 商品を追加</button><button class="btn secondary" onclick="tab('vault');showItemForm()">＋ 保管庫に追加</button></div></div><div class="card"><h2>利用前の大切なお知らせ</h2><p class="muted">この試作版はオフライン対応の単一HTMLです。データは端末・ブラウザごとに保存され、クラウド同期はありません。ブラウザのデータ削除などで消える可能性があります。定期的にJSONバックアップを書き出してください。</p></div></section>
+<section id="products" class="hide"><div class="card"><div class="itemhead product-heading"><h2>商品一覧</h2><div class="product-actions"><button class="btn" onclick="showProductForm()">＋ 追加</button><button class="btn secondary" type="button" onclick="toggleProductCustom()" aria-controls="productCustom" aria-expanded="false" id="customToggle">⚙ カスタマイズ</button></div></div><details class="custom" id="productCustom"><summary>種類・進捗の設定</summary><p class="muted">名前を変更すると既存商品にも反映します。商品や保管データは削除しません。</p><div class="row"><input id="newType" placeholder="新しい商品種類" maxlength="32"><button class="btn secondary" onclick="addOption('types')">種類を追加</button></div><div id="typeChips" class="row"></div><div class="row"><input id="newStatus" placeholder="新しい進捗名" maxlength="32"><button class="btn secondary" onclick="addOption('statuses')">進捗を追加</button></div><div id="statusChips" class="row"></div></details><div class="line"></div><div id="productForm" class="hide"><label class="field">商品名<input id="pName" placeholder="例：こげもちの食いしん坊" maxlength="120"></label><label class="field">種類<select id="pType"><option>LINE絵文字</option><option>note記事</option><option>デジタル商品</option><option>その他</option></select></label><label class="field">進捗<select id="pStatus"><option>企画中</option><option>制作中</option><option>検品中</option><option>完成</option><option>公開済み</option></select></label><label class="field">管理メモ<textarea id="pNote" placeholder="正式タイトル、仕様、登録情報など"></textarea></label><div class="row"><button class="btn" onclick="saveProduct()">保存</button><button class="btn secondary" onclick="hideProductForm()">キャンセル</button></div><div class="line"></div></div><div class="product-search-v045"><label class="field" for="productSearchV045">商品名・メモを検索<input type="search" id="productSearchV045" placeholder="例：こげもち、記事タイトル" oninput="render()" autocomplete="off"></label><div class="product-filter-grid-v045"><label class="field" for="productTypeFilterV045">種類<select id="productTypeFilterV045" onchange="render()"><option value="">すべての種類</option></select></label><label class="field" for="productStatusFilterV045">進捗<select id="productStatusFilterV045" onchange="render()"><option value="">すべての進捗</option></select></label></div><div class="product-filter-foot-v045"><span id="productSearchCountV045" class="muted" aria-live="polite"></span><button type="button" class="btn secondary" onclick="resetProductSearchV045()">条件をクリア</button></div></div><div id="productList"></div></div></section>
+<section id="vault" class="hide"><div class="card"><div class="itemhead"><h2>文章・画像の保管庫</h2><button class="btn" onclick="showItemForm()">＋ 追加</button></div><div id="itemForm" class="hide"><label class="field">保管名<input id="iName" maxlength="120" placeholder="例：顔・毛並み基準画像"></label><label class="field">保管先<select id="iProduct"></select></label><label class="field">種類<select id="iType" onchange="toggleItemType()"><option value="text">文章・プロンプト</option><option value="image">画像</option><option value="mixed">文章＋画像</option></select></label><div id="textInput"><label class="field">保存する文章<textarea id="iText" placeholder="タイトル、説明文、プロンプトなど"></textarea></label></div><div id="imageInput" class="hide"><label class="field">画像ファイル（複数選択可・各3MB以下）<input type="file" id="iFile" accept="image/png,image/jpeg,image/webp" multiple onchange="onSelectedImages(this.files)"><div id="selectedImages" class="image-stack" aria-live="polite"></div></label><p class="muted">選んだ画像は下に表示されます。間違えた画像は保存前に1枚ずつ外せます。大量画像は保存できない場合があります。</p></div><div class="row"><button class="btn" onclick="saveItem()">保存</button><button class="btn secondary" onclick="hideItemForm()">キャンセル</button></div><div class="line"></div></div><label class="field">保管先で絞り込み<select id="filter" onchange="renderItems()"></select></label><div class="vault-search-v047"><label class="field" for="vaultSearchV047">保存名・文章を検索<input type="search" id="vaultSearchV047" placeholder="例：基準画像、プロンプト" oninput="renderItems()" autocomplete="off"></label><div class="vault-search-foot-v047"><span id="vaultSearchCountV047" class="muted" aria-live="polite"></span><button type="button" class="btn secondary" onclick="resetVaultSearchV047()">条件をクリア</button></div></div><div id="itemList"></div></div></section>
+<section id="backup" class="hide"><div class="card"><h2>データを書き出す</h2><p class="muted">商品情報・文章・登録画像をまとめてJSON形式でバックアップします。iPhoneでは共有メニューや「ファイル」に保存してください。</p><div id="backupSummary" class="safe-panel" aria-live="polite"></div><button class="btn" onclick="exportData()">↓ バックアップを保存</button></div><div class="card"><h2>バックアップから復元</h2><p class="muted">復元すると現在の登録内容が置き換わります。必要なら先に現在のデータをバックアップしてください。</p><label class="field">JSONファイルを選択<input id="importFile" type="file" accept=".json,application/json"></label><button class="btn secondary" onclick="previewImport()">① ファイル内容を確認</button><div id="restorePreview" class="safe-panel hide" aria-live="polite"></div><label id="restoreAgreeLabel" class="field hide"><input type="checkbox" id="restoreAgree" onchange="updateRestoreButton()"> 現在のデータが置き換わることを理解しました</label><button id="restoreExecute" class="btn secondary hide" onclick="importData()" disabled>② 確認して復元</button></div><div class="card"><h2>管理上の注意</h2><p class="muted">この試作版ではアカウント登録、オンライン同期、複数端末間共有、販売サイトへの登録・投稿はできません。機密情報・パスワードは登録しないでください。</p><p class="muted">誤操作を防ぐため、削除するには確認欄へ「全削除」と入力してください。</p><input id="deleteConfirmText" placeholder="全削除" autocomplete="off" oninput="updateDeleteButton()"><button id="deleteExecute" class="btn warn" onclick="clearData()" disabled>全登録データを削除</button></div></section><footer>つくログ 試験版 v0.4.8 · 個人利用向け</footer></main><div id="renameDialog" class="rename-overlay hide" role="dialog" aria-modal="true" aria-labelledby="renameTitle"><div class="rename-panel"><h2 id="renameTitle">名前を変更</h2><label class="field">新しい名前<input id="renameValue" maxlength="32"></label><p class="muted">登録済みの商品も更新します。商品・文章・画像は削除しません。</p><div class="row"><button type="button" class="btn" onclick="confirmRename()">変更を保存</button><button type="button" class="btn secondary" onclick="cancelRename()">キャンセル</button></div></div></div><div id="toast" role="status"></div>
+<script>
+'use strict';function toggleProductCustom(){const d=document.getElementById('productCustom');d.open=!d.open;document.getElementById('customToggle').setAttribute('aria-expanded',String(d.open));}const KEY='tsukulog.v035.test';const PREVIOUS_KEY='tsukulog.v034.test';let db={products:[],items:[],types:['LINE絵文字','note記事','デジタル商品','その他'],statuses:['企画中','制作中','検品中','完成','公開済み']};try{const d=JSON.parse(localStorage.getItem(KEY)||localStorage.getItem(PREVIOUS_KEY)||'null');if(d&&Array.isArray(d.products)&&Array.isArray(d.items))db={...db,...d}}catch{}const $=id=>document.getElementById(id);const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));const id=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,8);function alertToast(s){$('toast').textContent=s;$('toast').style.display='block';setTimeout(()=>$('toast').style.display='none',2700)}function persist(){try{localStorage.setItem(KEY,JSON.stringify(db));render();return true}catch(e){alertToast('保存容量が不足しています。バックアップしてください');return false}}function tab(name){if(name==='backup')setTimeout(()=>{updateBackupSummary();resetRestorePreview()},0);document.querySelectorAll('main section').forEach(el=>el.classList.toggle('hide',el.id!==name));document.querySelectorAll('nav button').forEach(el=>el.classList.toggle('active',el.dataset.tab===name));render()}document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>tab(b.dataset.tab));function showProductForm(){$('productForm').classList.remove('hide')}function hideProductForm(){$('productForm').classList.add('hide')}function saveProduct(){let name=$('pName').value.trim();if(!name)return alertToast('商品名を入力してください');db.products.push({id:id(),name,type:$('pType').value,status:$('pStatus').value,note:$('pNote').value,created:new Date().toISOString()});if(persist()){$('pName').value='';$('pNote').value='';hideProductForm();alertToast('商品を登録しました')}}function changeStatus(pid,val){let p=db.products.find(p=>p.id===pid);if(p){p.status=val;persist()}}function deleteProduct(pid){if(db.items.some(i=>i.product===pid&&i.locked))return alertToast('確定済みデータがある商品の削除はできません');let p=db.products.find(p=>p.id===pid);if(!p||!confirm('「'+p.name+'」を削除しますか？ 紐づく保管アイテムは共通保管庫に移動します。'))return;db.products=db.products.filter(p=>p.id!==pid);db.items.forEach(i=>{if(i.product===pid)i.product=''});persist()}function showItemForm(){fillSelects();$('itemForm').classList.remove('hide')}function hideItemForm(){$('itemForm').classList.add('hide')}function toggleItemType(){$('textInput').classList.toggle('hide',!['text','mixed'].includes($('iType').value));$('imageInput').classList.toggle('hide',!['image','mixed'].includes($('iType').value))}async function saveItem(){let name=$('iName').value.trim(),type=$('iType').value;if(!name)return alertToast('保管名を入力してください');let value='';if(type==='text'||type==='mixed'){value=$('iText').value;if(type==='text'&&!value.trim())return alertToast('文章を入力してください')}let imageData='';if(type==='image'||type==='mixed'){let f=$('iFile').files[0];if(!f&&type==='image')return alertToast('画像を選択してください');if(f){if(f.size>3*1024*1024)return alertToast('画像は3MB以下にしてください');if(!['image/png','image/jpeg','image/webp'].includes(f.type))return alertToast('対応しない画像形式です');imageData=await new Promise((resolve,reject)=>{let r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=reject;r.readAsDataURL(f)});if(type==='image')value=imageData;}}if(type==='mixed'&&!value.trim()&&!imageData)return alertToast('文章または画像を追加してください');db.items.push({id:id(),name,type,value,imageData,product:$('iProduct').value,locked:false,created:new Date().toISOString()});if(persist()){$('iName').value='';$('iText').value='';$('iFile').value='';hideItemForm();alertToast('保管しました')}else db.items.pop()}
+function fillSelects(){updateCustomOptions();let opts='<option value="">共通保管庫</option>'+db.products.map(p=>`<option value="${esc(p.id)}">${esc(p.name)}</option>`).join('');let chosen=$('iProduct').value,filter=$('filter').value;$('iProduct').innerHTML=opts;$('filter').innerHTML='<option value="all">すべての保管先</option>'+opts;$('iProduct').value=chosen||'';$('filter').value=filter||'all'}/* v0.4.4: chronological product history, read-only UI settings in memory. */
+const productTimelineOrders={};
+function getProductTimelineOrder(pid){return productTimelineOrders[pid]==='old'?'old':'new'}
+function setProductTimelineOrder(pid,order){productTimelineOrders[pid]=order==='old'?'old':'new';render()}
+function sortProductTimeline(items,order){return [...items].sort((a,b)=>{const at=Date.parse(a.created||'')||0,bt=Date.parse(b.created||'')||0;return (order==='old'?at-bt:bt-at)||String(a.id).localeCompare(String(b.id))})}
+function formatTimelineDate(iso){const t=Date.parse(iso||'');if(!Number.isFinite(t))return '日時未記録';return new Intl.DateTimeFormat('ja-JP',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}).format(new Date(t))}
+function resetProductSearchV045(){'productSearchV045 productTypeFilterV045 productStatusFilterV045'.split(' ').forEach(id=>$(id).value='');render()}
+let openProductV046=null;function toggleProductV046(event,id){event.preventDefault();openProductV046=openProductV046===id?null:id;render();}
+function render(){ updateCustomOptions(); $('countProducts').textContent=db.products.length;$('countItems').textContent=db.items.length;fillSelects();const searchBox=$('productSearchV045');const typeBox=$('productTypeFilterV045');const statusBox=$('productStatusFilterV045');const query=searchBox.value.trim().toLocaleLowerCase('ja-JP');const chosenType=typeBox.value;const chosenStatus=statusBox.value;const types=[...new Set([...db.types,...db.products.map(p=>p.type).filter(Boolean)])];const statuses=[...new Set([...db.statuses,...db.products.map(p=>p.status).filter(Boolean)])];typeBox.innerHTML='<option value="">すべての種類</option>'+types.map(x=>`<option value="${esc(x)}">${esc(x)}</option>`).join('');statusBox.innerHTML='<option value="">すべての進捗</option>'+statuses.map(x=>`<option value="${esc(x)}">${esc(x)}</option>`).join('');typeBox.value=chosenType;statusBox.value=chosenStatus;const filteredProducts=db.products.filter(p=>(!query||String(p.name||'').toLocaleLowerCase('ja-JP').includes(query)||String(p.note||'').toLocaleLowerCase('ja-JP').includes(query))&&(!chosenType||p.type===chosenType)&&(!chosenStatus||p.status===chosenStatus));$('productSearchCountV045').textContent=`${filteredProducts.length}件表示 / 全${db.products.length}件`;$('productList').innerHTML=filteredProducts.length?filteredProducts.map(p=>`<details class="item product-accordion-v046" ${openProductV046===p.id?'open':''}><summary class="product-summary-v046" onclick="toggleProductV046(event,'${p.id}')"><span class="product-name-v046">${esc(p.name)}</span><span class="product-meta-v046"><span class="tag">${esc(p.type)}</span><span class="tag">${esc(p.status||'進捗未設定')}</span></span></summary><div class="product-body-v046"><label class="field">進捗<select onchange="changeStatus('${p.id}',this.value)">${db.statuses.concat(p.status&&!db.statuses.includes(p.status)?[p.status]:[]).map(s=>`<option ${p.status===s?'selected':''}>${s}</option>`).join('')}</select></label>${p.note?`<div class="snippet">${esc(p.note)}</div><div class="row"><button class="btn secondary" onclick="copyText(${JSON.stringify(p.id)},'product')">メモをコピー</button></div>`:''}<div class="product-related-v043"><div class="product-related-head-v043"><strong>関連する保管データ</strong><span class="tag">${db.items.filter(i=>i.product===p.id).length}件</span></div>${db.items.some(i=>i.product===p.id)?`<div class="timeline-tools-v044"><span class="muted">制作履歴（保存日時順）</span><select aria-label="${esc(p.name)}の表示順" onchange="setProductTimelineOrder('${p.id}',this.value)"><option value="new" ${getProductTimelineOrder(p.id)==='new'?'selected':''}>新しい順</option><option value="old" ${getProductTimelineOrder(p.id)==='old'?'selected':''}>古い順</option></select></div>${sortProductTimeline(db.items.filter(i=>i.product===p.id),getProductTimelineOrder(p.id)).map(i=>`<button type="button" class="related-link-v043 timeline-entry-v044" onclick="openProductVault('${p.id}','${i.id}')"><span class="timeline-main-v044"><span class="related-name-v043">${esc(i.name)}</span><small class="timeline-date-v044">${formatTimelineDate(i.created)}${i.sourceId?' · 修正版':''}</small></span><span class="status-v038 ${i.locked?'status-locked-v038':'status-draft-v038'}">${i.locked?'🔒 保護中':'下書き'}</span><span aria-hidden="true">›</span></button>`).join('')}`:'<p class="muted related-empty-v043">この商品に紐づく保管データはまだありません。</p>'}</div><div class="row" style="margin-top:10px"><button class="btn secondary" onclick="openProductVault('${p.id}')">関連保管庫を開く</button><button class="btn warn" onclick="deleteProduct('${p.id}')">削除</button></div></div></details>`).join(''):(db.products.length?'<div class="empty">一致する商品がありません。検索条件を変えてください。</div>':'<div class="empty">まだ商品がありません。最初の作品を追加しましょう。</div>');renderItems()}function renderItems(){let f=$('filter').value;let items=db.items.filter(i=>f==='all'||i.product===f);$('itemList').innerHTML=items.length?items.map(i=>`<div class="item"><div class="itemhead"><strong>${esc(i.name)}</strong><span class="tag">${esc(db.products.find(p=>p.id===i.product)?.name||'共通')}</span></div>${(i.type==='image'||i.imageData)?`<img class="thumb" src="${i.type==='image'?i.value:i.imageData}" alt="${esc(i.name)}">`:''}${i.type!=='image'&&i.value?`<div class="snippet">${esc(i.value)}</div>`:''}<div class="row" style="margin-top:10px">${i.type!=='image'&&i.value?`<button class="btn secondary" onclick="copyText('${i.id}','item')">コピー</button>`:''}${(i.type==='image'||i.imageData)?`<button class="btn secondary" onclick="downloadImage('${i.id}')">画像を保存</button>`:''}<button class="btn warn" onclick="deleteItem('${i.id}')" ${i.locked?'disabled title="確定データは削除できません"':''}>削除</button></div><div class="row extra">${i.locked?'<span class="tag">🔒 確定・保護中</span>':`<button class="chip" onclick="reviseItem('${i.id}')">下書き ✎</button>`}${i.locked?`<button class="btn secondary" onclick="unlockItem('${i.id}')">🔓 保護を解除</button>`:`<button class="btn secondary" onclick="lockItem('${i.id}')">確定して保護</button>`}<button class="btn secondary" onclick="reviseItem('${i.id}')">修正版を追加</button></div>${i.sourceId?`<div class="muted">修正元ID: ${esc(i.sourceId)}</div>`:''}</div>`).join(''):'<div class="empty">保管アイテムがありません。</div>'}async function copyText(id,type){let s=type==='item'?db.items.find(x=>x.id===id)?.value:db.products.find(x=>x.id===id)?.note;if(!s)return;try{await navigator.clipboard.writeText(s);alertToast('コピーしました')}catch{let t=document.createElement('textarea');t.value=s;document.body.appendChild(t);t.select();let ok=document.execCommand('copy');t.remove();alertToast(ok?'コピーしました':'コピーできません。文章を長押ししてください')}}function deleteItem(id){if(db.items.find(i=>i.id===id)?.locked)return alertToast('確定済みデータは削除できません');if(!confirm('この保管アイテムを削除しますか？'))return;db.items=db.items.filter(i=>i.id!==id);persist()}async function downloadImage(id){
+ const i=db.items.find(x=>x.id===id);if(!i||!(i.type==='image'||i.imageData))return;
+ const data=i.type==='image'?i.value:i.imageData; if(typeof data!=='string'||!data.startsWith('data:image/'))return alertToast('画像データを確認できません');
+ const mime=(data.match(/^data:([^;,]+)/)||[])[1]||'image/png';
+ const ext=mime==='image/jpeg'?'jpg':mime==='image/webp'?'webp':'png';
+ const filename=(i.name||'image').replace(/[\\/:*?"<>|]/g,'_')+'.'+ext;
+ try{
+   const blob=await (await fetch(data)).blob();
+   const file=new File([blob],filename,{type:mime});
+   if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){
+     try{await navigator.share({files:[file],title:filename});return}
+     catch(err){if(err&&err.name==='AbortError')return}
+   }
+   const url=URL.createObjectURL(blob);
+   const a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();
+   setTimeout(()=>URL.revokeObjectURL(url),60000);
+   alertToast('保存されない場合はSafariから開いてください');
+ }catch(e){alertToast('画像を書き出せませんでした')}
+}function dataCounts(d){return {products:Array.isArray(d.products)?d.products.length:0,items:Array.isArray(d.items)?d.items.length:0,images:Array.isArray(d.items)?d.items.reduce((n,i)=>n+(Array.isArray(i.images)?i.images.length:(i.image?1:0)),0):0};}
+function countText(c){return `商品 ${c.products}件 ／ 保管アイテム ${c.items}件 ／ 画像 ${c.images}枚`;}
+function updateBackupSummary(){let c=dataCounts(db),el=$('backupSummary');if(!el)return;let empty=!c.products&&!c.items;el.className='safe-panel'+(empty?' warning':'');el.innerHTML=`<strong>現在のバックアップ対象</strong><p>${countText(c)}</p>${empty?'<p>⚠ 商品・保管データが0件です。別のブラウザや保存環境で開いていないか確認してください。</p>':'<p>保存したJSONは「ファイル」でサイズを確認し、大切に保管してください。</p>'}`;}
+function exportData(){let c=dataCounts(db);if(!c.products&&!c.items&&!confirm('⚠ 商品0件・保管アイテム0件です。空のバックアップを作成しますか？'))return;let b=new Blob([JSON.stringify({format:'tsukulog.v1',date:new Date().toISOString(),...db},null,2)],{type:'application/json'});let url=URL.createObjectURL(b),a=document.createElement('a');a.href=url;a.download='tsukulog-backup-'+new Date().toISOString().slice(0,10)+'.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);alertToast('バックアップを作成しました。保存ファイルのサイズを確認してください');}
+let pendingRestore=null;
+function resetRestorePreview(){pendingRestore=null;let p=$('restorePreview'),agree=$('restoreAgree'),label=$('restoreAgreeLabel'),execute=$('restoreExecute');if(p){p.classList.add('hide');p.textContent='';}if(agree)agree.checked=false;if(label)label.classList.add('hide');if(execute){execute.classList.add('hide');execute.disabled=true;}}
+function updateRestoreButton(){$('restoreExecute').disabled=!pendingRestore||!$('restoreAgree').checked;}
+async function previewImport(){resetRestorePreview();let f=$('importFile').files[0];if(!f)return alertToast('JSONファイルを選択してください');let d;try{d=JSON.parse(await f.text())}catch{return alertToast('JSONを読み込めません')}
+if(!d||d.format!=='tsukulog.v1'||!Array.isArray(d.products)||!Array.isArray(d.items)||d.products.some(p=>typeof p.id!=='string'||typeof p.name!=='string')||d.items.some(i=>typeof i.id!=='string'||typeof i.value!=='string'||!['image','text','mixed'].includes(i.type)))return alertToast('つくログのバックアップ形式ではありません');
+pendingRestore={d,file:f};let before=dataCounts(db),after=dataCounts(d);let empty=!after.products&&!after.items;let p=$('restorePreview');p.className='safe-panel'+(empty?' warning':'');p.innerHTML=`<strong>復元前の比較</strong><p>現在：${countText(before)}</p><p>復元後：${countText(after)}</p><p>ファイル：${esc(f.name)}（${Math.round(f.size/1024)} KB）</p><p>⚠ 復元すると現在の登録内容を置き換えます。</p>${empty?'<p><strong>⚠ このバックアップの商品・保管アイテムは0件です。通常の復元はできません。</strong></p>':''}`;
+if(empty){pendingRestore=null;return;} $('restoreAgreeLabel').classList.remove('hide');$('restoreExecute').classList.remove('hide');}
+async function importData(){if(!pendingRestore||!$('restoreAgree').checked)return alertToast('先に内容を確認してください');if($('importFile').files[0]!==pendingRestore.file)return alertToast('ファイルが変わりました。再確認してください');let d=pendingRestore.d,before=dataCounts(db),after=dataCounts(d);if(!confirm(`現在：${countText(before)}\n復元後：${countText(after)}\n\n現在のデータを置き換えます。実行しますか？`))return;let old=db;db={...db,products:d.products,items:d.items,types:Array.isArray(d.types)?d.types:db.types,statuses:Array.isArray(d.statuses)?d.statuses:db.statuses};if(!persist()){db=old;render();alertToast('復元できませんでした。元データを保持しています');}else{resetRestorePreview();updateBackupSummary();alertToast('復元しました')}}
+function updateDeleteButton(){let e=$('deleteExecute');if(e)e.disabled=$('deleteConfirmText').value!=='全削除'}
+function clearData(){if($('deleteConfirmText').value!=='全削除')return;if(!confirm('現在のデータをすべて削除します。バックアップは保存しましたか？'))return;if(!confirm('最終確認：商品・文章・画像を削除します。実行しますか？'))return;let old=db;db={...db,products:[],items:[]};if(!persist()){db=old;render();return}$('deleteConfirmText').value='';updateDeleteButton();updateBackupSummary();alertToast('削除しました')}
+$('importFile').addEventListener('change',resetRestorePreview);
+render();
+
+function updateCustomOptions(){
+  db.types=Array.isArray(db.types)?db.types:['LINE絵文字','note記事','デジタル商品','その他'];
+  db.statuses=Array.isArray(db.statuses)?db.statuses:['企画中','制作中','検品中','完成','公開済み'];
+  for(const [element,values] of [['pType',db.types],['pStatus',db.statuses]]){
+    const el=$(element),old=el.value; const needed=old&&!values.includes(old)?values.concat(old):values;
+    el.innerHTML=needed.map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join('');
+    if(old)el.value=old;
+  }
+  if($('typeChips'))$('typeChips').innerHTML=db.types.map((v,i)=>`<button type="button" class="chip" onclick="openRename('types',${i})">${esc(v)} ✎</button>`).join('');
+  if($('statusChips'))$('statusChips').innerHTML=db.statuses.map((v,i)=>`<button type="button" class="chip" onclick="openRename('statuses',${i})">${esc(v)} ✎</button>`).join('');
+}
+function addOption(which){const input=$(which==='types'?'newType':'newStatus');const value=input.value.trim();if(!value)return;
+ if(db[which].includes(value))return alertToast('同じ名前が登録されています');db[which].push(value);input.value='';persist();alertToast('追加しました')}
+let renameTarget=null;
+function openRename(which,index){
+ const old=db[which]?.[index];if(typeof old!=='string')return;
+ renameTarget={which,index,old};$('renameTitle').textContent=(which==='types'?'商品の種類':'進捗')+'を変更';
+ $('renameValue').value=old;$('renameDialog').classList.remove('hide');$('renameValue').focus();
+}
+function cancelRename(){renameTarget=null;$('renameDialog').classList.add('hide')}
+function confirmRename(){
+ if(!renameTarget)return;const {which,index,old}=renameTarget;
+ const value=$('renameValue').value.trim().slice(0,32);
+ if(!value)return alertToast('名前を入力してください');
+ if(value!==old&&db[which].includes(value))return alertToast('同じ名前が存在します');
+ if(value===old){cancelRename();return}
+ // v0.3既存形式では商品に選択肢の文字列が保存されているため、参照中の商品も更新
+ const snapshot=JSON.stringify(db);
+ db[which][index]=value;
+ for(const product of db.products){if(which==='types'&&product.type===old)product.type=value;
+ if(which==='statuses'&&product.status===old)product.status=value}
+ if(!persist()){db=JSON.parse(snapshot);render();return}
+ cancelRename();alertToast('名前を変更しました');
+}
+function lockItem(itemId){const item=db.items.find(i=>i.id===itemId);if(!item||item.locked)return;
+ if(!confirm('確定して保護しますか？ 確定後の削除はできません。修正は別データとして追加します。'))return;
+ const previous={locked:!!item.locked,lockedAt:item.lockedAt};
+ item.locked=true;item.lockedAt=new Date().toISOString();
+ if(!persist()){item.locked=previous.locked;item.lockedAt=previous.lockedAt;render();return}
+ alertToast('確定して保護しました');}
+function unlockItem(itemId){
+ const item=db.items.find(i=>i.id===itemId);
+ if(!item||!item.locked)return;
+ if(!confirm('この保管記録の保護を解除しますか？\n解除後は削除できる状態になります。文章・画像・修正履歴は変更しません。'))return;
+ const previous={locked:item.locked,lockedAt:item.lockedAt};
+ item.locked=false;delete item.lockedAt;
+ if(!persist()){item.locked=previous.locked;item.lockedAt=previous.lockedAt;render();return}
+ alertToast('保護を解除しました');
+}
+function reviseItem(itemId){const item=db.items.find(i=>i.id===itemId);if(!item)return;
+ tab('vault');showItemForm();$('iName').value=item.name+' 修正版';$('iProduct').value=item.product||'';$('iType').value=item.type;toggleItemType();
+ if(item.type==='text'||item.type==='mixed')$('iText').value=item.value;
+ if(item.type==='image'||item.imageData)alertToast('必要なら修正版の画像を選択してください');
+ window.pendingRevisionOf=itemId;document.getElementById('itemForm').scrollIntoView({behavior:'smooth',block:'start'});
+}
+const originalSaveItem=saveItem;
+saveItem=async function(){const before=db.items.length;const revision=window.pendingRevisionOf;await originalSaveItem();if(db.items.length>before&&revision){const last=db.items[db.items.length-1];last.sourceId=revision;window.pendingRevisionOf=null;persist();}};
+const originalHideItemForm=hideItemForm;
+hideItemForm=function(){window.pendingRevisionOf=null;originalHideItemForm()};
+
+
+/* v0.3.4: separate storage key, multi-image selection, revision-safe image history */
+let stagedImages=[];
+let retainedImages=[];
+function getImages(item){
+  if(Array.isArray(item.images)&&item.images.length){return item.images.filter(x=>x&&typeof x.data==='string'&&x.data.startsWith('data:image/')).map(x=>({id:x.id||id(),name:x.name||'画像',data:x.data}));}
+  const legacy=item.imageData||(item.type==='image'?item.value:'');
+  return typeof legacy==='string'&&legacy.startsWith('data:image/')?[{id:item.id+'-legacy',name:item.name||'画像',data:legacy}]:[];
+}
+function renderSelectedImages(){
+ const items=[...retainedImages.map(x=>({...x,kind:'retained'})),...stagedImages.map(x=>({...x,kind:'staged'}))];
+ $('selectedImages').innerHTML=items.map(x=>`<div class="image-row"><img src="${x.data}" alt=""><span class="image-name">${esc(x.name)}</span><button type="button" class="btn warn" onclick="removeSelectedImage('${x.kind}','${x.id}')" aria-label="${esc(x.name)}を外す">削除</button></div>`).join('')||'<p class="muted">選択された画像はありません。</p>';
+}
+function removeSelectedImage(kind,imageId){if(kind==='retained')retainedImages=retainedImages.filter(x=>x.id!==imageId);else stagedImages=stagedImages.filter(x=>x.id!==imageId);renderSelectedImages();}
+async function onSelectedImages(files){
+ const batch=Array.from(files||[]);$('iFile').value='';
+ for(const file of batch){
+  if(!['image/png','image/jpeg','image/webp'].includes(file.type)){alertToast('PNG・JPEG・WebPのみ選べます');continue;}
+  if(file.size>3*1024*1024){alertToast('1枚3MB以下の画像を選んでください');continue;}
+  try{const data=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(file)});stagedImages.push({id:id(),name:file.name,data});}catch(e){alertToast('画像を読み込めませんでした');}
+ }
+ renderSelectedImages();
+}
+const v034ShowItemForm=showItemForm;
+showItemForm=function(){v034ShowItemForm();retainedImages=[];stagedImages=[];renderSelectedImages();};
+const v034HideItemForm=hideItemForm;
+hideItemForm=function(){retainedImages=[];stagedImages=[];window.pendingRevisionOf=null;v034HideItemForm();};
+const v034ReviseItem=reviseItem;
+reviseItem=function(itemId){
+ const item=db.items.find(x=>x.id===itemId);if(!item)return;
+ v034ReviseItem(itemId);
+ retainedImages=getImages(item).map(x=>({...x}));stagedImages=[];
+ renderSelectedImages();
+};
+saveItem=async function(){
+ const name=$('iName').value.trim(),type=$('iType').value,product=$('iProduct').value;
+ if(!name)return alertToast('保管名を入力してください');
+ const value=type==='image'?'':$('iText').value;
+ const images=['image','mixed'].includes(type)?[...retainedImages,...stagedImages].map(x=>({id:x.id,name:x.name,data:x.data})):[];
+ if(type==='text'&&!value.trim())return alertToast('文章を入力してください');
+ if(type==='image'&&!images.length)return alertToast('画像を選択してください');
+ if(type==='mixed'&&!images.length&&!value.trim())return alertToast('文章または画像を追加してください');
+ const before=JSON.stringify(db);
+ const revision=window.pendingRevisionOf||null;
+ const item={id:id(),name,type,value:type==='image'?(images[0]?.data||''):value,imageData:images[0]?.data||'',images,product,locked:false,created:new Date().toISOString()};
+ if(revision)item.sourceId=revision;
+ db.items.push(item);
+ if(!persist()){
+  db=JSON.parse(before);render();return;
+ }
+ window.pendingRevisionOf=null;
+ $('iName').value='';$('iText').value='';$('iFile').value='';retainedImages=[];stagedImages=[];
+ hideItemForm();alertToast(revision?'修正版を保存しました':'保管しました');
+};
+/* v0.4.3: product-to-vault navigation; presentation only, no writes. */
+function openProductVault(productId,itemId=null){
+ tab('vault');
+ $('filter').value=productId;
+ expandedVaultItemId=itemId;
+ renderItems();
+ const target=itemId?document.querySelector('[data-vault-item="'+itemId+'"]'):document.getElementById('vault');
+ if(target)target.scrollIntoView({block:'start',behavior:'smooth'});
+}
+/* v0.3.9: only the visible item is expanded; no data writes on toggle. */
+let expandedVaultItemId=null;
+function toggleVaultItem(itemId){
+ expandedVaultItemId=expandedVaultItemId===itemId?null:itemId;
+ renderItems();
+ const header=document.querySelector('[data-vault-item="'+itemId+'"] .vault-summary');
+ if(header)header.focus({preventScroll:true});
+}
+function resetVaultSearchV047(){$('vaultSearchV047').value='';$('filter').value='all';expandedVaultItemId=null;renderItems();}
+renderItems=function(){
+ const f=$('filter').value;
+ const query=($('vaultSearchV047')?.value||'').trim().toLocaleLowerCase('ja-JP');
+ const scoped=db.items.filter(x=>f==='all'||x.product===f);
+ const items=scoped.filter(x=>!query||String(x.name||'').toLocaleLowerCase('ja-JP').includes(query)||(x.type!=='image'&&String(x.value||'').toLocaleLowerCase('ja-JP').includes(query)));
+ $('vaultSearchCountV047').textContent=`${items.length}件表示 / 対象${scoped.length}件（全${db.items.length}件）`;
+ $('itemList').innerHTML=items.length?items.map(i=>{
+  const opened=expandedVaultItemId===i.id;
+  const imgs=opened?getImages(i):[];
+  const gallery=imgs.length?`<div class="image-gallery">${imgs.map((im,j)=>`<figure><img src="${im.data}" alt="${esc(im.name)}" role="button" tabindex="0" aria-label="${esc(im.name)}を拡大" onclick="openImagePreview('${i.id}',${j})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openImagePreview('${i.id}',${j})}"><figcaption>${esc(im.name)}</figcaption><button class="btn secondary" onclick="downloadImage('${i.id}',${j})">画像を保存</button></figure>`).join('')}</div>`:'';
+  return `<div class="item item-v038 item-v039" data-vault-item="${esc(i.id)}">
+    <button type="button" class="vault-summary" aria-expanded="${opened}" onclick="toggleVaultItem('${i.id}')">
+      <span class="vault-chevron" aria-hidden="true">${opened?'▾':'▸'}</span>
+      <span class="vault-name">${esc(i.name)}</span>
+      <span class="status-v038 ${i.locked?'status-locked-v038':'status-draft-v038'}">${i.locked?'🔒 保護中':'下書き'}</span>
+    </button>
+    ${opened?`<div class="vault-details">
+      <div class="vault-location"><span class="tag">${esc(db.products.find(p=>p.id===i.product)?.name||'共通')}</span></div>
+      ${gallery}${i.type!=='image'&&i.value?`<div class="snippet">${esc(i.value)}</div>`:''}
+      <div class="actions-v038">
+        <div class="action-pair-v038">
+          ${i.type!=='image'&&i.value?`<button class="btn secondary" onclick="copyText('${i.id}','item')">コピー</button>`:'<span class="action-placeholder-v038" aria-hidden="true"></span>'}
+          <button class="btn secondary" onclick="reviseItem('${i.id}')">修正版を追加 ✎</button>
+        </div>
+        ${i.locked?`<button class="btn secondary action-lock-v038" onclick="unlockItem('${i.id}')">🔓 保護を解除</button>`:`<button class="btn secondary action-lock-v038" onclick="lockItem('${i.id}')">🔒 確定して保護</button>`}
+        <div class="action-danger-v038"><button class="btn warn" onclick="deleteItem('${i.id}')" ${i.locked?'disabled title="確定済みのため削除不可"':''}>削除</button></div>
+      </div>
+      ${i.sourceId?`<div class="muted">修正元ID: ${esc(i.sourceId)}</div>`:''}
+    </div>`:''}
+  </div>`;
+ }).join(''):(scoped.length?'<div class="empty">一致する保管データがありません。検索条件を変えてください。</div>':'<div class="empty">保管アイテムがありません。</div>');
+};
+
+downloadImage=async function(itemId,imageIndex=0){
+ const item=db.items.find(x=>x.id===itemId),im=item&&getImages(item)[imageIndex];if(!im)return alertToast('画像が見つかりません');
+ const match=im.data.match(/^data:([^;,]+)/),mime=match?.[1]||'image/png';
+ const ext=mime==='image/jpeg'?'jpg':mime==='image/webp'?'webp':'png';
+ const filename=(im.name||'image').replace(/[\\/:*?"<>|]/g,'_').replace(/\.(png|jpe?g|webp)$/i,'')+'.'+ext;
+ try{
+  const blob=await(await fetch(im.data)).blob(),file=new File([blob],filename,{type:mime});
+  if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){
+   try{await navigator.share({files:[file],title:filename});return;}catch(err){if(err?.name==='AbortError')return;}
+  }
+  const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);
+  alertToast('保存されない場合はSafariで開いてください');
+ }catch(e){alertToast('画像を書き出せませんでした');}
+};
+/* v0.3.5: IndexedDB image store. Metadata stays in localStorage. */
+const IMG_DB_NAME='tsukulog-images-v035';
+let imageDatabase=null,storageReady=false;
+const initialDb=JSON.parse(JSON.stringify(db));
+const gate=document.createElement('div');
+gate.id='storageGate';gate.setAttribute('role','status');gate.textContent='画像保管庫を準備しています…';
+Object.assign(gate.style,{position:'fixed',inset:'0',zIndex:'90',background:'#f3f7f6ee',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:'700',padding:'25px',textAlign:'center'});
+document.body.appendChild(gate);
+function openImageDB(){return new Promise((resolve,reject)=>{
+ const request=indexedDB.open(IMG_DB_NAME,1);
+ request.onupgradeneeded=()=>{if(!request.result.objectStoreNames.contains('images'))request.result.createObjectStore('images')};
+ request.onsuccess=()=>resolve(request.result);request.onerror=()=>reject(request.error);
+ request.onblocked=()=>reject(new Error('データベースが使用中です'));
+})}
+function imageTransaction(entries,mode='readwrite'){
+ return new Promise((resolve,reject)=>{
+  const tr=imageDatabase.transaction('images',mode),store=tr.objectStore('images');let results=[];
+  entries.forEach(([key,value])=>{let r=value===undefined?store.get(key):store.put(value,key);r.onsuccess=()=>{if(value===undefined)results.push([key,r.result])}});
+  tr.oncomplete=()=>resolve(results);tr.onerror=()=>reject(tr.error);tr.onabort=()=>reject(tr.error);
+ })
+}
+function metadataOnly(database){
+ const clean={...database,items:database.items.map(item=>{
+  const copy={...item};copy.images=(item.images||[]).map(({id,name})=>({id,name}));
+  delete copy.imageData;if(copy.type==='image')copy.value='';return copy;
+ })};return clean;
+}
+persist=function(){
+ if(!storageReady)return false;
+ try{localStorage.setItem(KEY,JSON.stringify(metadataOnly(db)));render();return true}
+ catch(e){alertToast('商品情報を保存できません。バックアップしてください');return false}
+};
+async function hydrateOrMigrate(){
+ imageDatabase=await openImageDB();
+ const entries=[];
+ for(const item of db.items){
+  if(!Array.isArray(item.images))item.images=[];
+  let imgs=getImages(item);
+  // Legacy records may have imageData but no image array.
+  if(!imgs.length&&item.imageData){imgs=[{id:item.id+'-legacy',name:item.name||'画像',data:item.imageData}];}
+  for(const img of imgs)if(img.data)entries.push([img.id,img.data]);
+  // metadata-only records get their images hydrated from IDB
+ }
+ if(entries.length)await imageTransaction(entries);
+ const missing=[];
+ for(const item of db.items){for(const img of item.images||[])if(!img.data)missing.push([img.id,undefined]);}
+ const fetched=missing.length?new Map(await imageTransaction(missing,'readonly')):new Map();
+ for(const item of db.items){
+  item.images=(item.images||[]).map(img=>({...img,data:img.data||fetched.get(img.id)||''}));
+  if(!item.images.length&&item.imageData?.startsWith('data:image/'))item.images=[{id:item.id+'-legacy',name:item.name,data:item.imageData}];
+  if(item.images.some(img=>!img.data))throw Error('保存画像の一部を読み出せませんでした');
+ }
+ storageReady=true;
+ // Persist metadata only after all image writes have succeeded. Previous version is left intact.
+ if(!persist())throw Error('商品情報の保存に失敗しました');
+}
+// Save images before publishing the item metadata. On failure, leave form and old data alone.
+saveItem=async function(){
+ if(!storageReady)return alertToast('保管庫の準備が完了していません');
+ const name=$('iName').value.trim(),type=$('iType').value,product=$('iProduct').value;
+ if(!name)return alertToast('保管名を入力してください');
+ const value=type==='image'?'':$('iText').value;
+ const images=['image','mixed'].includes(type)?[...retainedImages,...stagedImages].map(im=>({id:im.id,name:im.name,data:im.data})):[];
+ if(type==='text'&&!value.trim())return alertToast('文章を入力してください');
+ if(type==='image'&&!images.length)return alertToast('画像を選択してください');
+ if(type==='mixed'&&!images.length&&!value.trim())return alertToast('文章または画像を追加してください');
+ const revision=window.pendingRevisionOf||null;
+ const item={id:id(),name,type,value,imageData:'',images,product,locked:false,created:new Date().toISOString()};
+ if(revision)item.sourceId=revision;
+ const old=JSON.stringify(db);
+ try{
+  if(images.length)await imageTransaction(images.map(im=>[im.id,im.data]));
+  db.items.push(item);
+  if(!persist())throw Error('商品情報の保存失敗');
+ }catch(err){db=JSON.parse(old);render();alertToast('保存できませんでした。画像枚数や端末の空き容量を確認してください');return}
+ window.pendingRevisionOf=null;$('iName').value='';$('iText').value='';$('iFile').value='';
+ retainedImages=[];stagedImages=[];hideItemForm();alertToast(revision?'修正版を保存しました':'保管しました');
+};
+// Export hydrated images as standard JSON so the backup is self-contained.
+exportData=function(){
+ if(!storageReady)return alertToast('保管庫の準備中です');
+ try{
+ const b=new Blob([JSON.stringify({format:'tsukulog.v1',date:new Date().toISOString(),...db},null,2)],{type:'application/json'});
+ const url=URL.createObjectURL(b),a=document.createElement('a');a.href=url;a.download='tsukulog-backup-'+new Date().toISOString().slice(0,10)+'.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);alertToast('画像を含むバックアップを作成しました');
+ }catch(err){alertToast('バックアップを作成できませんでした')}
+};
+importData=async function(){
+ if(!storageReady)return alertToast('保管庫の準備中です');
+ const file=$('importFile').files[0];if(!file)return alertToast('ファイルを選択してください');
+ let incoming;try{incoming=JSON.parse(await file.text())}catch{return alertToast('JSONを読み込めません')}
+ if(!incoming||incoming.format!=='tsukulog.v1'||!Array.isArray(incoming.products)||!Array.isArray(incoming.items)||incoming.products.some(p=>typeof p.id!=='string'||typeof p.name!=='string')||incoming.items.some(i=>typeof i.id!=='string'||!['text','image','mixed'].includes(i.type)))return alertToast('つくログのバックアップ形式ではありません');
+ if(!confirm('現在のテストデータを置き換えますか？必要なら先にバックアップしてください。'))return;
+ const next={products:incoming.products,items:incoming.items,types:incoming.types||db.types,statuses:incoming.statuses||db.statuses};
+ const writes=[];
+ try{
+  for(const it of next.items){const imgs=getImages(it);if(!imgs.length&&it.type==='image')throw Error('画像データがありません');it.images=imgs;for(const im of imgs)writes.push([im.id,im.data]);}
+  if(writes.length)await imageTransaction(writes);
+  const before=db;db=next;if(!persist()){db=before;render();throw Error('メタデータ保存に失敗しました')}
+  alertToast('復元しました');
+ }catch(err){alertToast('復元できませんでした。元のデータは維持しています')}
+};
+// prevent accidentally erasing image references if the current storage is inaccessible
+const v035ClearData=clearData;
+clearData=function(){if(!storageReady)return alertToast('保管庫の準備中です');v035ClearData()};
+
+/* v0.3.7: in-memory preview; never mutates stored data */
+let previewItemId=null,previewIndex=0;
+function openImagePreview(itemId,index){
+ const item=db.items.find(x=>x.id===itemId);if(!item)return;
+ const imgs=getImages(item);if(!imgs[index])return alertToast('画像が見つかりません');
+ previewItemId=itemId;previewIndex=index;refreshImagePreview();
+ $('imagePreview').classList.remove('hide');document.body.classList.add('preview-open');
+ $('imagePreview').querySelector('button').focus();
+}
+function refreshImagePreview(){
+ const item=db.items.find(x=>x.id===previewItemId);
+ const imgs=item?getImages(item):[];if(!imgs.length){closeImagePreview();return;}
+ previewIndex=Math.max(0,Math.min(previewIndex,imgs.length-1));
+ const im=imgs[previewIndex];$('previewImage').src=im.data;$('previewImage').alt=im.name;
+ $('previewName').textContent=im.name;$('previewCounter').textContent=(previewIndex+1)+' / '+imgs.length;
+ $('previewPrevious').disabled=previewIndex===0;$('previewNext').disabled=previewIndex===imgs.length-1;
+}
+function stepImagePreview(delta){previewIndex+=delta;refreshImagePreview()}
+function closeImagePreview(){
+ $('imagePreview').classList.add('hide');document.body.classList.remove('preview-open');
+ $('previewImage').removeAttribute('src');previewItemId=null;
+}
+document.addEventListener('keydown',e=>{
+ if($('imagePreview').classList.contains('hide'))return;
+ if(e.key==='Escape')closeImagePreview();
+ if(e.key==='ArrowLeft')stepImagePreview(-1);
+ if(e.key==='ArrowRight')stepImagePreview(1);
+});
+
+hydrateOrMigrate().then(()=>{gate.remove();render()}).catch(err=>{gate.textContent='画像保管庫を準備できませんでした。Safariの通常モードで開き直してください。旧データは変更していません。';gate.style.background='#fff4f2';});
+
+render();
+</script><div id="imagePreview" class="preview-overlay hide" role="dialog" aria-modal="true" aria-label="画像拡大表示"><div class="preview-head"><span id="previewName" class="preview-name"></span><button type="button" onclick="closeImagePreview()" aria-label="拡大表示を閉じる">✕ 閉じる</button></div><div class="preview-body"><img id="previewImage" alt="拡大画像"></div><div class="preview-actions"><button id="previewPrevious" type="button" onclick="stepImagePreview(-1)">‹ 前へ</button><span id="previewCounter"></span><button id="previewNext" type="button" onclick="stepImagePreview(1)">次へ ›</button></div></div>
+<style id="v048-unified-style">
+main nav {grid-template-columns:repeat(3,minmax(0,1fr));}
+#unifiedVaultV048 {margin-top:22px;scroll-margin-top:20px;}
+#unifiedVaultV048 .card {margin:0;}
+#unifiedVaultV048 .unified-note {color:#56746e;font-size:.9rem;margin:0 0 12px;}
+@media(max-width:560px){main nav {grid-template-columns:repeat(3,minmax(0,1fr));}main nav button{min-width:0;font-size:clamp(12px,3.6vw,17px);padding-left:3px;padding-right:3px;}}
+</style>
+<script id="v048-unified-script">
+/* v0.4.8: view-level integration only. No changes to db, storage keys or backup format. */
+(function(){
+  const products=document.getElementById('products');
+  const vault=document.getElementById('vault');
+  if(!products||!vault)return;
+  const area=document.createElement('div');
+  area.id='unifiedVaultV048';
+  area.innerHTML='<p class="unified-note">商品に紐づく文章・画像も、共通の記録も、ここで管理できます。</p>';
+  while(vault.firstChild)area.appendChild(vault.firstChild);
+  products.appendChild(area);
+  const originalTab=tab;
+  tab=function(name){
+    const requestedVault=name==='vault';
+    originalTab(requestedVault?'products':name);
+    if(requestedVault){
+      requestAnimationFrame(()=>area.scrollIntoView({behavior:'smooth',block:'start'}));
+    }
+  };
+})();
+</script>
+</body></html>
