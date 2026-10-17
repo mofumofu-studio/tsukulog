@@ -877,26 +877,59 @@ function v5RenderFolders(){
   return `<div class="v54-folder-row"><button class="v5-folder" type="button" data-folder="${esc(p.id)}"><span class="v5-folder-icon">📁</span><span class="v5-folder-text"><strong>${esc(p.name)}</strong><small>${esc(p.type||'作品')} · 資料 ${count}件${p.status?' · '+esc(p.status):''}</small></span><span aria-hidden="true">›</span></button>${p.id?`<button class="v54-delete-folder" type="button" data-delete-folder="${esc(p.id)}" aria-label="${esc(p.name)}の作品フォルダを削除" title="作品フォルダを削除">🗑</button>`:''}</div>`;
  }).join('')||'<div class="empty">条件に合う作品がありません</div>';
  document.querySelectorAll('.v5-folder').forEach(b=>b.addEventListener('click',()=>v5Open(b.dataset.folder)));
- document.querySelectorAll('.v54-delete-folder').forEach(b=>b.addEventListener('click',()=>v54DeleteFolder(b.dataset.deleteFolder)));
+ document.querySelectorAll('.v54-delete-folder').forEach(b=>b.addEventListener('click',()=>v55DeleteFolder(b.dataset.deleteFolder)));
 }
-function v54DeleteFolder(pid){
+// v0.5.5: remove a folder AND its resources (including protected resources).
+// Persist the deletion first; only then reclaim unreferenced image records from IndexedDB.
+// If image cleanup fails, the folder/resources stay deleted in the UI but the user is warned
+// that orphaned image storage may remain. Never delete images referenced by other resources.
+async function v55DeleteFolder(pid){
   if(!storageReady)return alertToast('保管庫の準備中です');
+  if(!pid)return alertToast('共通資料は削除できません');
   const product=db.products.find(p=>p.id===pid);
   if(!product)return alertToast('作品フォルダが見つかりません');
   const attached=db.items.filter(i=>i.product===pid);
-  const message=attached.length
-    ?`「${product.name}」の作品フォルダを削除しますか？\n\n中の資料 ${attached.length}件（保護中の資料を含む）は削除せず「共通資料」へ移動します。\n\n元の作品フォルダへの紐づけは解除されます。バックアップ保存後に実行してください。`
-    :`「${product.name}」の空の作品フォルダを削除しますか？\n\nこの操作は元に戻せません。`;
-  if(!window.confirm(message))return;
-  const before=JSON.stringify(db);
-  db.products=db.products.filter(p=>p.id!==pid);
-  for(const item of attached)item.product='';
+  const lockedCount=attached.filter(i=>i.locked).length;
+  const imageIds=[...new Set(attached.flatMap(item=>getImages(item).map(im=>im.id).filter(Boolean)))];
+  const confirmMessage=`「${product.name}」を削除しますか？\n\n`+
+    `フォルダ内の資料 ${attached.length}件・画像 ${imageIds.length}件もまとめて削除します。`+
+    (lockedCount?`\n保護中の資料 ${lockedCount}件も削除対象です。`:'')+
+    `\n\n共通資料には移動しません。元に戻せません。\n事前にJSONバックアップを保存してください。`;
+  if(!window.confirm(confirmMessage))return;
+  if(attached.length&&!window.confirm(`最終確認：\n「${product.name}」と中の資料 ${attached.length}件を完全に削除します。\n本当に実行しますか？`))return;
+  const previousProducts=db.products;
+  const previousItems=db.items;
+  db.products=previousProducts.filter(p=>p.id!==pid);
+  db.items=previousItems.filter(i=>i.product!==pid);
   if(!persist()){
-    db=JSON.parse(before);render();alertToast('削除に失敗しました。元のデータを維持しました');return;
+    db.products=previousProducts;db.items=previousItems;
+    render();alertToast('削除に失敗しました。元のデータを維持しました');return;
   }
-  v5RenderFolders();
-  alertToast(attached.length?`作品フォルダを削除し、資料${attached.length}件を共通資料へ移動しました`:'作品フォルダを削除しました');
+  if(v5Folder===pid){v5Folder=null;v5Home();}
+  // Shared image IDs must not be deleted if still referenced by any surviving resource.
+  const survivingImageIds=new Set(db.items.flatMap(item=>getImages(item).map(im=>im.id)));
+  const obsoleteIds=imageIds.filter(key=>!survivingImageIds.has(key));
+  if(obsoleteIds.length){
+    try{
+      await new Promise((resolve,reject)=>{
+        const tx=imageDatabase.transaction('images','readwrite');
+        const store=tx.objectStore('images');
+        for(const key of obsoleteIds)store.delete(key);
+        tx.oncomplete=()=>resolve();
+        tx.onerror=()=>reject(tx.error);
+        tx.onabort=()=>reject(tx.error);
+      });
+    }catch(err){
+      alertToast('資料は削除しましたが画像の保存領域の整理に失敗しました。バックアップを保持してください');
+      window.alert('フォルダと資料の削除は完了しましたが、画像の保存領域を整理できませんでした。\n画面を再読み込みして確認し、バックアップを保持してください。');
+      return;
+    }
+  }
+  alertToast(`「${product.name}」と資料 ${attached.length}件を削除しました`);
 }
+// Keep the old product management screen consistent with the home screen.
+deleteProduct=v55DeleteFolder;
+
 function v5Home(){v5Folder=null;hideItemForm();v5ShowSection('v5home');v5RenderFolders();window.scrollTo(0,0)}
 function v5Settings(){v5Folder=null;v5OrigTab('backup');window.scrollTo(0,0)}
 function v51PrepareOptions(){
@@ -991,7 +1024,7 @@ const v5OriginalRevise=reviseItem;
 reviseItem=function(itemId){const item=db.items.find(i=>i.id===itemId);if(!item)return;v5Folder=item.product||'';v5Open(v5Folder);v5OriginalRevise(itemId);v5SyncDestination()};
 // After restoration, the existing handler calls render(); folder listing is refreshed.
 document.getElementById('vault').prepend(document.getElementById('v5VaultHeader'));
-document.querySelector('footer').textContent='つくログ 正式版 v0.5.4・個人利用向け';
+document.querySelector('footer').textContent='つくログ 正式版 v0.5.5・個人利用向け';
 v5Home();
 </script><style id="v050-search-cleanup-css">
 /* Show search stats/actions only while searching within a folder. */
