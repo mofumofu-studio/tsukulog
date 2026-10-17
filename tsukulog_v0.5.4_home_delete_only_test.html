@@ -1,0 +1,1237 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#172f39"><title>つくログ</title><meta name="apple-mobile-web-app-title" content="つくログ"><link rel="apple-touch-icon" sizes="512x512" href="./tsukulog_icon_v0.4.2_up.png"><link rel="icon" type="image/png" sizes="512x512" href="./tsukulog_icon_v0.4.2_up.png"><meta name="application-name" content="つくログ"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="default"><style>
+:root{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Kaku Gothic ProN',sans-serif;color:#17323a;background:#f3f7f6}*{box-sizing:border-box}body{margin:0}button,input,select,textarea{font:inherit}button{cursor:pointer}header{background:#173d43;color:white;padding:calc(24px + env(safe-area-inset-top, 0px)) 18px 20px;border-radius:0 0 25px 25px}header small{color:#bde7da;letter-spacing:.08em}h1{font-size:26px;margin:8px 0 4px}header p{margin:0;color:#cce3de;font-size:13px}.container{max-width:760px;margin:auto;padding:18px 14px 95px}nav{display:flex;gap:8px;overflow-x:auto;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;padding:4px 0 16px;scrollbar-width:thin}nav button{border:0;border-radius:30px;background:#e1eae8;color:#29505a;padding:11px 17px;white-space:nowrap;font-weight:700}nav button.active{background:#206e67;color:white}.card{background:white;border:1px solid #e4eceb;border-radius:19px;padding:18px;margin-bottom:14px;box-shadow:0 3px 15px #0b3d3010}h2{font-size:19px;margin:0 0 12px}h3{font-size:16px;margin:0 0 8px}.muted{color:#6b8184;font-size:13px;line-height:1.7}.btn{border:0;border-radius:12px;background:#206e67;color:white;padding:12px 16px;font-weight:700}.btn.secondary{background:#e5f2ef;color:#206e67}.btn.warn{background:#fff0ed;color:#a33b30}.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.row>*{min-width:0}.field{display:block;margin:12px 0;font-weight:700;font-size:13px}.field input,.field select,.field textarea{display:block;width:100%;border:1px solid #cfdcda;border-radius:11px;padding:12px;margin-top:6px;background:#fff;color:#17323a;font-weight:400}.field textarea{min-height:94px;resize:vertical}.item{border:1px solid #e3ece9;border-radius:12px;padding:12px;margin:9px 0}.itemhead{display:flex;justify-content:space-between;gap:8px;align-items:center}.tag{display:inline-block;background:#e5f2ed;color:#226457;font-size:12px;border-radius:12px;padding:4px 9px}.snippet{white-space:pre-wrap;overflow-wrap:anywhere;font-size:14px;color:#3a555a;background:#f4f7f6;border-radius:10px;padding:10px;max-height:140px;overflow:auto}.thumb{height:105px;width:105px;object-fit:contain;background:#f2f6f5;border-radius:11px;border:1px solid #e4eceb}.hide{display:none!important}.empty{text-align:center;padding:24px 8px;color:#7b9191}.stat{display:grid;grid-template-columns:1fr 1fr;gap:10px}.stat .card{margin:0}.stat strong{display:block;font-size:28px;margin:7px 0;color:#166a63}.danger{color:#a33b30}footer{font-size:12px;text-align:center;color:#819493;margin:24px 0}#toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:#173d43;color:white;border-radius:30px;padding:12px 20px;display:none;z-index:5;white-space:nowrap;max-width:95vw}a{color:#17746b} .line{height:1px;background:#e6eeec;margin:15px 0}
+
+/* v0.2.1: iPhoneのホーム画面表示専用の視認性・安全領域修正 */
+nav{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;overflow:visible}
+nav button{min-width:0;white-space:normal;padding:11px 6px;line-height:1.35;overflow-wrap:anywhere}
+@media(max-width:560px){
+ nav{grid-template-columns:repeat(2,minmax(0,1fr))}
+ nav button{min-height:46px}
+}
+@media (display-mode:standalone){
+ body::before{content:"";position:fixed;top:0;left:0;right:0;height:env(safe-area-inset-top,0px);background:#f3f7f6;z-index:20;pointer-events:none}
+ header{padding-top:calc(16px + env(safe-area-inset-top,0px))}
+ #toast{bottom:calc(22px + env(safe-area-inset-bottom,0px))}
+}
+.custom{margin-top:18px;padding:12px;border:1px solid #dce9e6;border-radius:12px}.custom summary{cursor:pointer;font-weight:700}.custom input{min-width:130px;max-width:100%;flex:1}.chip{border:1px solid #cbdedb;background:#edf6f3;color:#205f5b;border-radius:18px;padding:8px 10px}.extra{padding-top:10px;align-items:center}.btn:disabled{opacity:.4;cursor:not-allowed}
+
+.rename-overlay{position:fixed;inset:0;background:#0009;z-index:30;display:flex;align-items:center;justify-content:center;padding:20px}.rename-overlay.hide{display:none}.rename-panel{background:#fff;border-radius:18px;padding:20px;width:min(100%,440px);box-shadow:0 12px 35px #0003}.rename-panel h2{margin-top:0}.rename-panel input{font-size:16px;width:100%}.custom{margin:12px 0}.custom .row{margin-top:8px}
+
+.product-heading{flex-wrap:wrap;gap:10px}.product-heading h2{margin:0}.product-actions{display:flex;gap:8px;align-items:center;flex-wrap:nowrap}.product-actions .btn{white-space:nowrap;padding:10px 12px;font-size:14px}.product-heading .custom{width:100%}
+@media(max-width:370px){.product-heading h2{width:100%}.product-actions{width:100%;justify-content:flex-end}}
+
+#toast{max-width:calc(100vw - 32px);width:max-content;white-space:normal;overflow-wrap:anywhere;text-align:center;left:50%;transform:translateX(-50%)}
+
+.image-stack{display:grid;gap:9px;margin:12px 0}.image-row{display:flex;align-items:center;gap:10px;min-width:0;border:1px solid #dce9e6;border-radius:12px;padding:8px}.image-row img{width:58px;height:58px;object-fit:contain;border-radius:8px;background:#f3f7f6;flex-shrink:0}.image-name{flex:1;min-width:0;overflow-wrap:anywhere;font-size:13px}.image-row button{flex-shrink:0}.image-gallery{display:flex;flex-wrap:wrap;gap:9px;margin:10px 0}.image-gallery figure{margin:0;width:112px;max-width:45%}.image-gallery img{height:90px;width:100%;object-fit:contain;background:#f3f7f6;border-radius:9px}.image-gallery figcaption{font-size:11px;overflow-wrap:anywhere;color:#647e81}.image-gallery button{padding:7px 8px;font-size:12px;margin-top:4px}
+
+/* v0.3.7 image preview and mobile-safe notifications */
+#toast{white-space:normal;overflow-wrap:anywhere;width:max-content;max-width:calc(100vw - 32px);text-align:center;line-height:1.45;bottom:calc(20px + env(safe-area-inset-bottom,0px));padding:10px 16px}
+.image-gallery figure img{cursor:zoom-in}
+.preview-overlay{position:fixed;inset:0;z-index:1000;background:rgba(9,23,27,.95);display:flex;flex-direction:column;justify-content:center;padding:calc(14px + env(safe-area-inset-top,0px)) 14px calc(16px + env(safe-area-inset-bottom,0px));color:#fff}
+.preview-overlay.hide{display:none!important}
+.preview-head{display:flex;align-items:center;gap:10px;justify-content:space-between;min-height:46px}
+.preview-name{font-size:14px;overflow-wrap:anywhere;flex:1;min-width:0}
+.preview-overlay button{min-height:44px;border:1px solid #9db5af;background:#294a4e;color:white;border-radius:12px;padding:9px 14px;font-weight:700}
+.preview-overlay button:disabled{opacity:.35}
+.preview-body{min-height:0;flex:1;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.preview-body img{width:100%;height:100%;object-fit:contain}
+.preview-actions{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:8px}
+.preview-actions span{font-size:14px;font-variant-numeric:tabular-nums}
+body.preview-open{overflow:hidden}
+
+/* v0.3.8: vault action hierarchy only. No persistence changes. */
+.item-v038 .item-head-v038{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:12px}
+.item-v038 .item-heading-v038{display:flex;flex-direction:column;align-items:flex-start;gap:6px;min-width:0;flex:1}
+.item-v038 .item-heading-v038 strong{overflow-wrap:anywhere;max-width:100%}
+.item-v038 .status-v038{white-space:nowrap;padding:6px 12px;border-radius:999px;font-weight:700;font-size:13px;flex:none}
+.item-v038 .status-draft-v038{background:#e5f2ed;color:#24695e}
+.item-v038 .status-locked-v038{background:#dcece7;color:#15544d}
+.item-v038 .actions-v038{display:flex;flex-direction:column;gap:10px;margin-top:14px}
+.item-v038 .action-pair-v038{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.item-v038 .action-pair-v038 .btn{width:100%;min-width:0;min-height:46px;white-space:normal;overflow-wrap:anywhere;padding:10px 8px}
+.item-v038 .action-placeholder-v038{display:block}
+.item-v038 .action-lock-v038{width:100%;min-height:46px;white-space:normal}
+.item-v038 .action-danger-v038{border-top:1px solid #e4eceb;margin-top:6px;padding-top:12px;display:flex;justify-content:flex-end}
+.item-v038 .action-danger-v038 .btn{min-width:92px}
+@media(max-width:370px){.item-v038 .action-pair-v038{gap:6px}.item-v038 .action-pair-v038 .btn{font-size:13px}}
+
+/* v0.3.9: compact accordion in vault only; storage schema unchanged */
+.item-v039{padding:0;overflow:hidden}
+.item-v039 .vault-summary{display:flex;align-items:center;gap:10px;min-height:56px;padding:12px 14px;width:100%;background:transparent;color:inherit;border:0;text-align:left;cursor:pointer;font:inherit}
+.item-v039 .vault-summary:focus-visible{outline:3px solid #237b71;outline-offset:-3px}
+.item-v039 .vault-summary .vault-name{flex:1;min-width:0;font-weight:750;overflow-wrap:anywhere}
+.item-v039 .vault-summary .vault-chevron{flex:none;color:#4c7974;font-size:17px}
+.item-v039 .vault-summary .status-v038{font-size:12px;padding:5px 9px}
+.item-v039 .vault-details{padding:12px 14px 16px;border-top:1px solid #dce9e6}
+.item-v039 .vault-location{margin-bottom:9px}
+.item-v039 .vault-details .actions-v038{margin-top:14px}
+@media(max-width:370px){.item-v039 .vault-summary{gap:6px;padding:11px 9px}.item-v039 .vault-summary .status-v038{font-size:11px}}
+
+.safe-panel{background:#edf5f2;border:1px solid #c8ded6;border-radius:14px;padding:14px;margin:12px 0;line-height:1.8;color:#173d43}.safe-panel.warning{background:#fff5e3;border-color:#eed7a2}.safe-panel strong{font-size:16px}.safe-panel.hide{display:none}.safe-panel p{margin:6px 0}#restoreAgreeLabel input{width:auto;display:inline-block;vertical-align:middle}#deleteConfirmText{width:100%;margin:6px 0 12px}button:disabled{opacity:.45;cursor:not-allowed}
+.product-search-v045{margin:12px 0 14px;padding:12px;background:#f3f8f6;border:1px solid #dbe8e3;border-radius:13px}.product-search-v045 .field{margin:6px 0 10px}.product-filter-grid-v045{display:grid;grid-template-columns:1fr 1fr;gap:10px}.product-filter-foot-v045{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}.product-filter-foot-v045 .btn{padding:9px 12px;font-size:13px}@media(max-width:350px){.product-filter-grid-v045{grid-template-columns:1fr}}
+
+/* v0.4.6 product list accordion: collapsed by default, only one open */
+.product-accordion-v046{padding:0;overflow:hidden}
+.product-summary-v046{display:flex;align-items:center;gap:10px;flex-wrap:wrap;cursor:pointer;padding:15px 14px;list-style:none;min-height:58px}
+.product-summary-v046::-webkit-details-marker{display:none}
+.product-summary-v046::before{content:'▸';color:#4d7975;font-size:13px}
+.product-accordion-v046[open]>.product-summary-v046::before{content:'▾'}
+.product-name-v046{font-weight:750;flex:1;min-width:115px;overflow-wrap:anywhere}
+.product-meta-v046{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end}
+.product-meta-v046 .tag{font-size:11px;white-space:normal;text-align:center}
+.product-body-v046{padding:2px 14px 15px;border-top:1px solid #e2ece9}
+@media(max-width:420px){.product-summary-v046{gap:7px;padding:13px 10px}.product-body-v046{padding:2px 10px 12px}.product-meta-v046 .tag{font-size:10px}}
+
+/* v0.5.1: 商品登録中にも種類・進捗編集パネルを表示 */
+#products.v5-create #productForm .v51-options-launch{margin:10px 0 14px}
+#products.v5-create #productForm .v51-options-launch button{width:100%;text-align:left;display:flex;justify-content:space-between;align-items:center}
+#products.v5-create #productForm #productCustom{display:block!important;margin:0 0 17px;padding:0;border:0;background:transparent}
+#products.v5-create #productForm #productCustom:not([open]){display:none!important}
+#products.v5-create #productForm #productCustom>summary{display:none}
+#products.v5-create #productForm #productCustom .row{gap:8px}
+#products.v5-create #productForm #productCustom #newType,#products.v5-create #productForm #productCustom #newStatus{flex:1 1 180px;min-width:0}
+.option-manage-row{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 10px;background:#f5faf8;border:1px solid #d3e3df;border-radius:12px;margin:7px 0;flex-wrap:wrap}.option-manage-name{font-size:15px;font-weight:650;overflow-wrap:anywhere;flex:1;min-width:90px}.option-manage-buttons{display:flex;align-items:center;gap:4px}.option-mini{border:1px solid #c8dcda;background:white;border-radius:9px;padding:7px 9px;font-size:14px;min-width:38px;color:#326d68;cursor:pointer}.option-mini:disabled{opacity:.28;cursor:default}.option-mini.danger{color:#ad5347}.option-mini:focus-visible{outline:3px solid #8dc2bd}
+
+/* v0.5.2 additive import trial */
+.v52-import{margin-top:12px;padding:14px;border:1px solid #d8dfe9;border-radius:14px;background:#f8fafc;color:#25354b}
+.v52-import h3{margin:0 0 8px;font-size:16px}
+.v52-import p{font-size:13px;line-height:1.6}
+.v52-import input[type=file]{display:block;max-width:100%;width:100%;font-size:14px}
+.v52-preview{margin:12px 0;padding:10px;border-radius:9px;background:white;white-space:pre-wrap;font-size:13px;line-height:1.7}
+.v52-import button{margin-top:8px}
+</style><style id="product-related-v043-css">
+.product-related-v043{margin-top:12px;border:1px solid #d9e7e4;border-radius:14px;background:#f5faf8;padding:10px}
+.product-related-head-v043{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px}
+.related-link-v043{width:100%;min-height:44px;text-align:left;display:flex;align-items:center;gap:8px;padding:10px 7px;background:white;border:1px solid #dce9e6;border-radius:10px;margin:6px 0;color:#213b40;font:inherit;cursor:pointer}
+.related-name-v043{flex:1;min-width:0;overflow-wrap:anywhere;font-weight:650}
+.related-empty-v043{margin:6px 0 2px}
+</style><style id="product-timeline-v044-css">
+.timeline-tools-v044{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:8px 0 10px;flex-wrap:wrap}
+.timeline-tools-v044 select{width:auto;max-width:150px;min-height:42px;padding:7px 10px;background:#fff;border:1px solid #ccdbd7;border-radius:10px;color:#17323a}
+.timeline-entry-v044{gap:8px;align-items:center}
+.timeline-main-v044{display:flex;flex-direction:column;gap:3px;flex:1;min-width:0}
+.timeline-date-v044{font-size:12px;color:#667e7a;line-height:1.5}
+</style><style id="vault-search-v047-css">.vault-search-v047{margin:14px 0 16px;padding:14px;border:1px solid #d8e5e2;border-radius:16px;background:#f1f7f5}.vault-search-v047 .field{margin:0}.vault-search-foot-v047{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-top:10px}.vault-search-foot-v047 .btn{padding:9px 12px}.vault-search-v047 input{width:100%}</style><style id="v050-style">
+header{padding:calc(16px + env(safe-area-inset-top,0px)) 18px 15px}header small,header p{display:none}header h1{margin:0;font-size:24px}
+main.container{padding-top:12px}main>nav{display:none!important}
+.v5-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px}.v5-top button{border:0;background:#e3efed;color:#215e57;border-radius:12px;padding:10px 13px;font-weight:bold}
+.v5-folder{display:flex;align-items:center;gap:12px;text-align:left;width:100%;border:1px solid #dce9e6;border-radius:16px;background:white;padding:17px 14px;margin:10px 0;min-height:74px;color:#17323a}.v5-folder-icon{font-size:27px}.v5-folder-text{flex:1;min-width:0}.v5-folder-text strong{display:block;overflow-wrap:anywhere}.v5-folder-text small{display:block;color:#64807d;margin-top:4px}.v5-list-count{font-size:12px;color:#66827d}
+.v5-search{width:100%;padding:13px;border-radius:13px;border:1px solid #d1e1dd;font-size:16px}.v5-folder-title{margin:0 0 6px}.v5-back{margin-bottom:15px;display:inline-block}.v5-hidden{display:none!important}
+#vault.v5-mode>.card>.itemhead{display:none}#vault.v5-mode #filter{display:none}#vault.v5-mode label:has(#filter){display:none}#vault.v5-mode .vault-search-v047{background:transparent;padding:4px 0 12px;border:0}#vault.v5-mode .vault-search-v047 .field{font-size:0}#vault.v5-mode #vaultSearchV047{font-size:16px}#vault.v5-mode #vaultSearchCountV047{font-size:12px}#vault.v5-mode .vault-search-foot-v047 .btn{font-size:12px}
+#vault.v5-mode>.card{padding:0;background:transparent;border:0;box-shadow:none}#vault.v5-mode #itemForm{background:white;border:1px solid #dce9e6;border-radius:15px;padding:16px;margin:12px 0}
+#vault.v5-mode #itemList .vault-details{background:#fff}#vault.v5-mode #itemList .item-v039{background:white}
+#products.v5-create>.card> *:not(#productForm):not(.itemhead){display:none!important}
+#products .v5-create-back{display:inline-block;margin-bottom:12px}#products.v5-create .v5-create-back{display:inline-block;margin-bottom:12px}#products.v5-create .product-actions{display:none!important}
+#products.v5-create .itemhead.product-heading h2{font-size:18px}
+.v5-folder-bar{display:flex;align-items:center;gap:8px;justify-content:space-between;flex-wrap:wrap;margin-bottom:14px}.v5-folder-bar h2{margin:0;font-size:20px}
+.v5-gallery{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin:14px 0}.v5-gallery button{padding:0;overflow:hidden;border:1px solid #dde9e6;border-radius:12px;background:white;aspect-ratio:1}.v5-gallery img{width:100%;height:100%;object-fit:cover}.v5-subheading{font-size:14px;margin-top:18px}
+#vault.v5-mode .vault-location{display:none}
+/* In v0.5.0 detail-only mode, images remain visible inside expanded records. */
+.v5-note{font-size:12px;color:#6b8184;line-height:1.6}
+#vault.v5-mode .v5-legacy-destination{display:none!important}
+#vault.v5-mode .v5-auto-location{display:block}
+.v5-auto-location{display:none;margin:0 0 12px;font-size:14px;color:#426c66;background:#eef5f3;border-radius:12px;padding:10px 12px}
+#vault.v5-mode #itemForm .field{margin-bottom:13px}
+#vault.v5-mode #itemForm textarea{min-height:96px}
+</style><style id="v050-more-actions-css">
+.v5-primary-action{margin:14px 0 10px}.v5-more-actions{margin-top:14px;border:1px solid #dce9e6;border-radius:13px;background:#f6faf9;overflow:hidden}
+.v5-more-actions>summary{cursor:pointer;list-style:none;padding:14px 15px;min-height:48px;display:flex;justify-content:space-between;align-items:center;color:#376b64;font-weight:650}
+.v5-more-actions>summary::-webkit-details-marker{display:none}.v5-more-actions>summary::marker{content:""}
+.v5-more-actions[open]>summary{border-bottom:1px solid #dce9e6}.v5-more-actions[open]>summary span{transform:rotate(180deg)}
+.v5-more-content{padding:12px;display:flex;flex-direction:column;gap:10px}.v5-more-content .btn{width:100%;margin:0}
+</style><style id="v050-compact-actions-css">
+/* Compact action dropdown, keeping image and text as the primary content. */
+.v5-compact-toolbar{display:flex;justify-content:flex-end;margin-top:12px;position:relative}
+.v5-more-actions.v5-compact-actions{position:relative;display:inline-block;margin:0;border:0;border-radius:10px;background:transparent;overflow:visible;max-width:100%}
+.v5-more-actions.v5-compact-actions>summary{display:inline-flex;gap:8px;align-items:center;justify-content:center;min-height:44px;padding:9px 14px;border:1px solid #dce9e6;border-radius:10px;background:#eef5f3;color:#376b64;font-size:14px;font-weight:650;white-space:nowrap;list-style:none}
+.v5-more-actions.v5-compact-actions[open]>summary{border:1px solid #96b7b0;border-radius:10px}
+.v5-more-actions.v5-compact-actions .v5-more-content{position:absolute;right:0;top:calc(100% + 6px);z-index:15;display:flex;flex-direction:column;gap:0;width:min(250px,calc(100vw - 64px));padding:5px;border:1px solid #dce9e6;border-radius:13px;background:#fff;box-shadow:0 8px 24px rgba(18,49,48,.16)}
+.v5-more-actions.v5-compact-actions .v5-more-content .btn{font-size:14px;text-align:left;min-height:44px;width:100%;border:0;border-radius:8px;padding:10px 13px;background:white;color:#294c49;white-space:normal}
+.v5-more-actions.v5-compact-actions .v5-more-content .btn.warn{color:#a54841;background:#fff4f1}
+.v5-more-actions.v5-compact-actions .v5-more-content .btn:disabled{opacity:.45}
+.v5-more-actions.v5-compact-actions .v5-more-content .btn:focus-visible,.v5-more-actions.v5-compact-actions>summary:focus-visible{outline:2px solid #376b64;outline-offset:2px}
+</style><style id="v050-compact-actions-safefix">
+/* iPhone-safe: menu opens INSIDE the card; never clipped by accordion overflow. */
+#vault.v5-mode .v5-compact-toolbar{display:block;margin-top:10px;position:static}
+#vault.v5-mode .v5-more-actions.v5-compact-actions{display:block;width:100%;position:static;margin:0;overflow:visible}
+#vault.v5-mode .v5-more-actions.v5-compact-actions>summary{display:inline-flex;float:none;min-height:40px;padding:8px 12px}
+#vault.v5-mode .v5-more-actions.v5-compact-actions .v5-more-content{position:static;inset:auto;z-index:auto;width:100%;max-width:100%;margin-top:8px;box-shadow:none;border:1px solid #dce9e6;display:flex;flex-direction:column;gap:2px;padding:6px}
+#vault.v5-mode .v5-more-actions.v5-compact-actions:not([open]) .v5-more-content{display:none}
+#vault.v5-mode .v5-more-actions.v5-compact-actions .v5-more-content .btn{text-align:left;min-height:42px}
+</style><style id="v050-editorial-detail-css">
+/* v0.5.0: visual-first record details; no floating menus clipped by Safari. */
+#vault.v5-mode .vault-details{padding:14px 15px 17px!important;background:#fff}
+#vault.v5-mode .v5-compact-toolbar{display:flex;justify-content:flex-end;align-items:flex-start;margin:0 0 7px!important}
+#vault.v5-mode .v5-more-actions.v5-compact-actions{width:auto!important;max-width:100%;position:relative!important}
+#vault.v5-mode .v5-more-actions.v5-compact-actions>summary{border:0!important;border-radius:50%!important;min-width:42px;min-height:42px;padding:8px 10px!important;background:#f1f6f4!important;font-size:21px!important;letter-spacing:2px;color:#294f49!important;line-height:1}
+#vault.v5-mode .v5-more-actions.v5-compact-actions[open]>summary{background:#dceae6!important}
+#vault.v5-mode .v5-more-actions.v5-compact-actions .v5-more-content{position:static!important;display:flex;flex-direction:column;gap:0!important;width:min(245px,calc(100vw - 110px))!important;max-width:none!important;margin-top:6px!important;padding:4px!important;background:white!important;border:1px solid #d8e5e1!important;border-radius:13px!important;box-shadow:0 4px 13px rgba(28,65,57,.08)!important}
+#vault.v5-mode .v5-more-actions.v5-compact-actions:not([open]) .v5-more-content{display:none!important}
+#vault.v5-mode .v5-more-actions.v5-compact-actions .v5-more-content .btn{font-size:13px!important;font-weight:550!important;text-align:left!important;min-height:43px!important;line-height:1.4!important;border:0!important;border-radius:8px!important;padding:10px 12px!important;background:transparent!important;color:#263e3c!important}
+#vault.v5-mode .v5-more-actions.v5-compact-actions .v5-more-content .btn.warn{color:#ab554b!important;background:#fff7f5!important}
+#vault.v5-mode .image-gallery{margin:0 0 8px!important;gap:12px}
+#vault.v5-mode .image-gallery figure{margin:0!important;min-width:0}
+#vault.v5-mode .image-gallery figure img{display:block;max-height:400px;width:auto;max-width:100%;height:auto;object-fit:contain;border-radius:12px;background:#f4f7f6;cursor:zoom-in}
+#vault.v5-mode .image-gallery figcaption{margin:7px 0 4px;color:#637b77;font-size:12px;overflow-wrap:anywhere}
+#vault.v5-mode .image-gallery .btn{font-size:12px!important;padding:8px 10px!important;border-radius:9px!important;min-height:35px!important}
+#vault.v5-mode .vault-summary{padding-top:16px;padding-bottom:16px}
+#vault.v5-mode .vault-details .snippet{white-space:pre-wrap;overflow-wrap:anywhere}
+@media(max-width:480px){#vault.v5-mode .vault-details{padding:13px!important}#vault.v5-mode .image-gallery figure img{max-height:335px}}
+</style><style id="v050-centered-detail-css">
+/* One visual column, image-centered. No floating outside clipped cards. */
+#vault.v5-mode .vault-details{padding:15px!important;min-width:0}
+#vault.v5-mode .v5-clean-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;min-height:42px}
+#vault.v5-mode .v5-clean-title{font-size:13px;font-weight:650;color:#657c7b}
+#vault.v5-mode .v5-compact-toolbar{margin:0!important;flex:0 0 auto;display:flex;justify-content:flex-end}
+#vault.v5-mode .v5-more-actions.v5-compact-actions>summary{height:42px;width:42px;min-width:42px;border-radius:50%!important;padding:0!important;display:flex!important;align-items:center;justify-content:center}
+#vault.v5-mode .v5-more-actions.v5-compact-actions[open] .v5-more-content{position:absolute!important;right:0!important;top:calc(100% + 4px)!important;margin:0!important;z-index:4!important;width:min(225px,calc(100vw - 92px))!important;box-shadow:0 7px 24px #132e2926!important}
+#vault.v5-mode .image-gallery{display:grid!important;grid-template-columns:1fr!important;gap:14px!important;margin:0 0 8px!important}
+#vault.v5-mode .image-gallery figure{width:100%!important;max-width:100%!important;min-width:0!important;margin:0!important;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center}
+#vault.v5-mode .image-gallery figure img{grid-column:1/-1;display:block!important;width:100%!important;max-width:100%!important;height:310px!important;max-height:45vh!important;object-fit:contain!important;object-position:center center!important;background:#f3f7f6!important;border-radius:12px!important;padding:10px!important}
+#vault.v5-mode .image-gallery figcaption{grid-column:1;min-width:0;margin:0!important;font-size:12px;overflow-wrap:anywhere}
+#vault.v5-mode .image-gallery figure button{grid-column:2;margin:0!important;white-space:nowrap;font-size:12px!important}
+@media(min-width:680px){#vault.v5-mode .image-gallery figure img{height:370px!important;max-height:50vh!important}}
+</style><style id="v050-menu-close-fix">
+#vault.v5-mode .v5-more-actions .v5-more-content .v5-menu-close{display:block;width:100%;border:0;background:#f2f7f5;color:#315c55;text-align:right;border-radius:8px;min-height:42px;padding:8px 13px;font:inherit;font-size:14px;font-weight:650;cursor:pointer}
+#vault.v5-mode .v5-more-actions .v5-more-content .v5-menu-close:focus-visible{outline:2px solid #376b64;outline-offset:2px}
+</style><style id="v050-adaptive-image-layout-css">
+/* v0.5.0: keep the verified three-dot toggle; eliminate fixed-height image whitespace. */
+#vault.v5-mode .image-gallery {display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:12px!important;margin:10px 0 8px!important;}
+#vault.v5-mode .image-gallery figure {display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;column-gap:10px!important;row-gap:8px!important;align-items:center!important;width:100%!important;min-width:0!important;margin:0!important;}
+#vault.v5-mode .image-gallery figure img {grid-column:1/-1!important;justify-self:center!important;display:block!important;width:auto!important;height:auto!important;max-width:100%!important;max-height:min(42vh,360px)!important;min-height:0!important;margin:0 auto!important;padding:0!important;background:transparent!important;border-radius:10px!important;object-fit:contain!important;}
+#vault.v5-mode .image-gallery figcaption {grid-column:1!important;font-size:12px!important;min-width:0!important;overflow-wrap:anywhere;}
+#vault.v5-mode .image-gallery figure button {grid-column:2!important;min-height:35px!important;padding:7px 10px!important;font-size:12px!important;margin:0!important;white-space:nowrap!important;}
+#vault.v5-mode .vault-details {padding:12px 13px 15px!important;}
+#vault.v5-mode .v5-clean-heading {margin-bottom:8px!important;}
+@media(max-width:420px){#vault.v5-mode .image-gallery figure img{max-height:min(40vh,320px)!important;}}
+</style><style id="v050-menu-no-clip-css">
+/* Three-dot menu remains in normal document flow: never conceal Delete. */
+#vault.v5-mode .vault-details{overflow:visible!important}
+#vault.v5-mode .v5-clean-heading{display:grid!important;grid-template-columns:minmax(0,1fr) 46px!important;align-items:center!important;column-gap:8px!important;row-gap:8px!important;height:auto!important;min-height:44px!important}
+#vault.v5-mode .v5-clean-title{grid-column:1!important;grid-row:1!important;min-width:0!important}
+#vault.v5-mode .v5-compact-toolbar,#vault.v5-mode .v5-tap-menu{display:contents!important}
+#vault.v5-mode .v5-tap-trigger{grid-column:2!important;grid-row:1!important;justify-self:end!important}
+#vault.v5-mode .v5-tap-content{position:static!important;grid-column:1/-1!important;grid-row:2!important;inset:auto!important;z-index:auto!important;width:100%!important;max-width:none!important;min-width:0!important;box-sizing:border-box!important;margin:0 0 5px!important;box-shadow:none!important;border-radius:12px!important}
+#vault.v5-mode .v5-tap-content[hidden]{display:none!important}
+#vault.v5-mode .v5-tap-content .v5-menu-item{min-height:44px!important}
+</style><style id="v050-final-layout-pass">
+/* v0.5.0 final spacing pass: folder-first, short scan paths, safe inline actions. */
+main.container{padding-top:10px!important;padding-bottom:25px!important}
+#v5home .v5-top{margin-bottom:12px!important;gap:10px}
+#v5home .v5-top h2{font-size:19px!important;letter-spacing:.01em}
+#v5home .v5-search{margin:0 0 10px!important;min-height:45px!important;padding:11px 13px!important;border-radius:12px!important}
+#v5home .v5-folder{min-height:66px!important;margin:8px 0!important;padding:12px 14px!important;border-radius:14px!important;gap:11px!important}
+#v5home .v5-folder-icon{font-size:23px!important}
+#v5home .v5-folder-text strong{font-size:16px!important;line-height:1.45}
+#v5home .v5-folder-text small{font-size:12px!important;line-height:1.45;margin-top:2px!important}
+#v5home>.btn{margin-top:12px!important;min-height:46px!important}
+#v5home .v5-note{margin:10px 0 0!important}
+#vault.v5-mode .v5-back{margin:0 0 12px!important;padding:9px 12px!important;font-size:13px!important;min-height:40px!important}
+#vault.v5-mode .v5-folder-bar{margin:0 0 10px!important;gap:10px!important;align-items:center!important}
+#vault.v5-mode .v5-folder-bar h2{font-size:20px!important;line-height:1.35!important;min-width:0;overflow-wrap:anywhere}
+#vault.v5-mode .v5-folder-bar .btn{min-height:44px!important;padding:10px 13px!important;font-size:14px!important;white-space:nowrap!important}
+#vault.v5-mode .v5-subheading{margin:12px 0 5px!important;font-size:14px!important}
+#vault.v5-mode .vault-search-v047{padding:3px 0 7px!important;margin:0 0 5px!important}
+#vault.v5-mode #vaultSearchV047{min-height:43px!important;padding:10px 12px!important;border-radius:12px!important}
+#vault.v5-mode .vault-search-foot-v047{margin-top:5px!important;gap:8px!important}
+#vault.v5-mode .vault-search-foot-v047 .btn{min-height:36px!important;padding:7px 10px!important;font-size:12px!important}
+#vault.v5-mode #itemList .item-v039{border-radius:14px!important;margin:8px 0!important}
+#vault.v5-mode .item-v039 .vault-summary{min-height:54px!important;padding:12px 13px!important;gap:8px!important}
+#vault.v5-mode .item-v039 .vault-summary .vault-name{font-size:15px!important;line-height:1.4!important}
+#vault.v5-mode .item-v039 .vault-summary .status-v038{font-size:11px!important;padding:5px 8px!important}
+#vault.v5-mode .vault-details{padding:12px 13px 14px!important}
+#vault.v5-mode .v5-clean-heading{min-height:41px!important;margin:0 0 7px!important}
+#vault.v5-mode .v5-tap-trigger{width:42px!important;height:42px!important}
+#vault.v5-mode .v5-tap-content{margin-bottom:4px!important;border-radius:12px!important}
+#vault.v5-mode .image-gallery{gap:10px!important;margin:8px 0 6px!important}
+#vault.v5-mode .image-gallery figure{row-gap:6px!important}
+#vault.v5-mode .image-gallery figure img{max-height:min(36vh,310px)!important}
+#vault.v5-mode .image-gallery figcaption{font-size:12px!important}
+#vault.v5-mode .image-gallery figure button{min-height:34px!important;padding:7px 9px!important}
+#vault.v5-mode .vault-details .snippet{margin:7px 0!important;padding:11px 12px!important}
+#vault.v5-mode #itemForm{margin:10px 0!important;padding:14px!important}
+#vault.v5-mode #itemForm .field{margin-bottom:11px!important}
+#vault.v5-mode #itemForm textarea{min-height:88px!important}
+@media(max-width:390px){#vault.v5-mode .v5-folder-bar .btn{font-size:13px!important;padding:10px!important}#vault.v5-mode .v5-folder-bar h2{font-size:18px!important}}
+</style><style id="v51-simple-option-style">
+.simple-option-tabs{display:flex;background:#e8f2ef;border-radius:13px;padding:4px;gap:4px;margin:10px 0 15px}
+.simple-option-tab{flex:1;background:transparent;border:0;padding:12px 8px;border-radius:10px;color:#436967;font-weight:700;font-size:15px}
+.simple-option-tab.selected{background:#fff;color:#285f5a;box-shadow:0 1px 5px #163a3420}
+.simple-option-list{display:flex;flex-direction:column;gap:7px}
+.simple-option-item{border:1px solid #d8e6e1;border-radius:12px;background:white;overflow:hidden}
+.simple-option-title{display:flex;align-items:center;justify-content:space-between;width:100%;gap:10px;text-align:left;border:0;background:white;color:#233c3b;padding:13px 14px;font:inherit;font-weight:680;min-height:49px}
+.simple-option-title[aria-expanded="true"]{background:#eef6f3}
+.simple-option-title span:last-child{color:#547b75}
+.simple-option-actions{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;padding:10px 9px 6px}
+.simple-option-actions button{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:2px;min-width:0;border:1px solid #d5e4e0;border-radius:10px;padding:9px 2px;background:#f6faf8;color:#326b64;font-size:17px;font-weight:700;min-height:58px}
+.simple-option-actions button span{font-size:11px;white-space:nowrap}
+.simple-option-actions button.option-action-delete{color:#a9574b;background:#fff2ef}
+.simple-option-actions button:disabled{opacity:.3;cursor:not-allowed}
+.simple-option-note{font-size:12px;color:#6a817f;margin:0;padding:2px 11px 10px}
+.simple-option-add{display:flex;gap:8px;margin-top:13px;align-items:stretch}
+.simple-option-add input{min-width:0;flex:1}
+.simple-option-add .btn{white-space:nowrap}
+#productCustom .simple-option-list{margin:0}
+.v52-settings-home{margin:0 0 14px}.v52-settings-home button{max-width:100%;white-space:normal;text-align:left}
+</style><style>
+.universal-import{border:1px solid #cedbd7;border-radius:18px;padding:18px;margin:22px 0;background:#f6faf8}.universal-import h3{margin:0 0 10px}.universal-import .universal-guide{white-space:pre-wrap;overflow-wrap:anywhere;font-size:13px}.universal-import .universal-preview{background:white;border-radius:12px;padding:14px;margin:12px 0;white-space:pre-wrap;overflow-wrap:anywhere;max-height:420px;overflow:auto}.universal-import label{display:block;margin:12px 0}.universal-import input[type=file]{width:100%;max-width:100%}
+</style><style id="v052-release-ui">
+#v52ImportBlock,#v52PhrasesBlock,#v52PromptBatchBlock{display:none!important}
+</style>
+<style id="v53-home-css">.v53-new{display:block;width:100%;margin:16px 0 12px;min-height:52px}.v53-tools{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;margin:14px 0 6px}.v53-tools label{font-weight:650;font-size:13px;min-width:0}.v53-tools select{display:block;width:100%;min-width:0;margin-top:7px;font-size:15px;background:#fff;border:1px solid #cddedb;border-radius:12px;padding:10px 6px}.v53-count{font-size:13px;color:#687d7d;text-align:right;margin:10px 0}.v5-folder{max-width:100%}@media(max-width:360px){.v53-tools{grid-template-columns:1fr}}</style><style id="v53-rename-css">.v5-folder-bar{display:flex;align-items:center;flex-wrap:wrap;gap:10px}.v5-folder-bar h2{flex:1 1 200px;min-width:0;overflow-wrap:anywhere}.v53-rename-panel{margin:14px 0;border:1px solid #d7e5e1;border-radius:14px;padding:14px;background:#f8fbfa}.v53-rename-panel .field{margin:0 0 12px}</style><style id="v53-card-rename-css">
+#vault.v5-mode .v53-summary-line{display:flex;align-items:center;gap:7px;padding-right:13px;min-height:54px}
+#vault.v5-mode .v53-summary-line .vault-summary{min-width:0;flex:1 1 auto;width:auto!important;padding-right:0!important}
+#vault.v5-mode .v53-summary-line .status-v038{flex-shrink:0}
+#vault.v5-mode .v53-card-rename{flex:0 0 42px;height:42px;border-radius:12px;border:1px solid #d5e5e0;background:#e8f2ef;color:#336f67;font-size:24px;line-height:1;cursor:pointer}
+#vault.v5-mode .v53-card-rename:focus-visible{outline:3px solid #237b71;outline-offset:2px}
+.v53-visually-hidden{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
+@media(max-width:390px){#vault.v5-mode .v53-summary-line{gap:5px;padding-right:8px}#vault.v5-mode .v53-card-rename{flex-basis:38px;height:40px}}
+</style><style id="v53-title-pencil-css">#vault.v5-mode .v53-title-edit{display:flex;align-items:center;gap:9px;flex:1 1 240px;min-width:0}#vault.v5-mode .v53-title-edit h2{flex:0 1 auto;min-width:0;overflow-wrap:anywhere;margin:0}#vault.v5-mode .v53-title-pencil{flex:0 0 42px;height:42px;border:1px solid #d5e5e0;border-radius:12px;background:#e8f2ef;color:#336f67;font-size:23px;cursor:pointer;touch-action:manipulation}#vault.v5-mode .v53-title-pencil:focus-visible{outline:3px solid #237b71;outline-offset:2px}</style><style id="v054-home-folder-delete">
+#v5home .v54-folder-row{display:flex;align-items:stretch;gap:8px;margin:8px 0;min-width:0}
+#v5home .v54-folder-row .v5-folder{flex:1;min-width:0;margin:0!important}
+#v5home .v54-delete-folder{flex:0 0 46px;border:1px solid #f0d6d1;border-radius:14px;background:#fff6f4;color:#a55349;font-size:21px;cursor:pointer;touch-action:manipulation}
+#v5home .v54-delete-folder:focus-visible{outline:3px solid #ae5d53;outline-offset:2px}
+@media(max-width:380px){#v5home .v54-folder-row{gap:5px}#v5home .v54-delete-folder{flex-basis:42px}}
+</style>
+</head><body><header><small>MY CREATIVE WORKSPACE</small><h1>つくログ <span style="font-size:20px">✦</span></h1><p>つくる・残す・育てる。デジタル作品の管理ノート</p></header><main class="container"><nav><button data-tab="home" class="active">ホーム</button><button data-tab="products">商品管理</button><button data-tab="vault">保管庫</button><button data-tab="backup">バックアップ</button></nav>
+<section id="v5home"><div class="v5-top"><h2 style="margin:0">作品フォルダ</h2><button type="button" onclick="v5Settings()">⚙ 設定</button></div><button class="btn v53-new" type="button" onclick="v5NewFolder()">＋ 新しい作品</button><input class="v5-search" id="v5Search" placeholder="作品を検索" aria-label="作品検索" oninput="v5RenderFolders()"><div class="v53-tools"><label>種類で絞り込み<select id="v53Type" onchange="v5RenderFolders()"><option value="">すべての種類</option></select></label><label>表示順<select id="v53Sort" onchange="v53SetSort(this.value)"><option value="new">新しい順</option><option value="old">古い順</option><option value="name">名前順</option></select></label></div><div id="v53Count" class="v53-count" aria-live="polite"></div><div id="v5FolderList"></div><p class="v5-note">画像・文章は作品フォルダの中に保存します。共通資料もここから開けます。</p></section><section id="home"><div class="stat"><div class="card">登録商品<strong id="countProducts">0</strong><span class="muted">作品・記事など</span></div><div class="card">保管アイテム<strong id="countItems">0</strong><span class="muted">文章・画像</span></div></div><div class="card"><h2>今日の制作を記録しよう</h2><p class="muted">商品別に文章や基準画像を整理できます。登録内容はこのブラウザ内に保存されます。</p><div class="row"><button class="btn" onclick="tab('products');showProductForm()">＋ 商品を追加</button><button class="btn secondary" onclick="tab('vault');showItemForm()">＋ 保管庫に追加</button></div></div><div class="card"><h2>利用前の大切なお知らせ</h2><p class="muted">この試作版はオフライン対応の単一HTMLです。データは端末・ブラウザごとに保存され、クラウド同期はありません。ブラウザのデータ削除などで消える可能性があります。定期的にJSONバックアップを書き出してください。</p></div></section>
+<section id="products" class="hide"><button type="button" class="btn secondary v5-create-back" onclick="v5Home()">← 作品一覧（ホーム）へ戻る</button><div class="card"><div class="itemhead product-heading"><h2>商品一覧</h2><div class="product-actions"><button class="btn" onclick="showProductForm()">＋ 追加</button><button class="btn secondary" type="button" onclick="toggleProductCustom()" aria-controls="productCustom" aria-expanded="false" id="customToggle">⚙ カスタマイズ</button></div></div><details class="custom" id="productCustom"><summary>種類・進捗の設定</summary><p class="muted">項目をタップすると操作が表示されます。使用中の項目は削除できません。</p><div class="simple-option-tabs" role="tablist"><button type="button" class="simple-option-tab selected" data-which="types" aria-selected="true" onclick="switchOptionPanel('types')">種類</button><button type="button" class="simple-option-tab" data-which="statuses" aria-selected="false" onclick="switchOptionPanel('statuses')">進捗</button></div><div id="simpleTypePanel"><div id="typeChips" class="simple-option-list"></div><div class="simple-option-add"><input id="newType" placeholder="新しい種類" maxlength="32"><button class="btn secondary" onclick="addOption('types')">＋ 追加</button></div></div><div id="simpleStatusPanel" class="hide"><div id="statusChips" class="simple-option-list"></div><div class="simple-option-add"><input id="newStatus" placeholder="新しい進捗" maxlength="32"><button class="btn secondary" onclick="addOption('statuses')">＋ 追加</button></div></div></details><div class="line"></div><div id="productForm" class="hide"><label class="field">商品名<input id="pName" placeholder="例：こげもちの食いしん坊" maxlength="120"></label><label class="field">種類<select id="pType"><option>LINE絵文字</option><option>note記事</option><option>デジタル商品</option><option>その他</option></select></label><label class="field">進捗<select id="pStatus"><option>企画中</option><option>制作中</option><option>検品中</option><option>完成</option><option>公開済み</option></select></label><div class="v51-options-launch"><button type="button" class="btn secondary" onclick="v51ToggleOptions()" aria-expanded="false" aria-controls="productCustom" id="v51OptionsButton">種類・進捗を追加／変更 <span aria-hidden="true">⌄</span></button></div><label class="field">管理メモ<textarea id="pNote" placeholder="正式タイトル、仕様、登録情報など"></textarea></label><div class="row"><button class="btn" onclick="saveProduct()">保存</button><button class="btn secondary" onclick="hideProductForm()">キャンセル</button></div><div class="line"></div></div><div class="product-search-v045"><label class="field" for="productSearchV045">商品名・メモを検索<input type="search" id="productSearchV045" placeholder="例：こげもち、記事タイトル" oninput="render()" autocomplete="off"></label><div class="product-filter-grid-v045"><label class="field" for="productTypeFilterV045">種類<select id="productTypeFilterV045" onchange="render()"><option value="">すべての種類</option></select></label><label class="field" for="productStatusFilterV045">進捗<select id="productStatusFilterV045" onchange="render()"><option value="">すべての進捗</option></select></label></div><div class="product-filter-foot-v045"><span id="productSearchCountV045" class="muted" aria-live="polite"></span><button type="button" class="btn secondary" onclick="resetProductSearchV045()">条件をクリア</button></div></div><div id="productList"></div></div></section>
+<section id="vault" class="hide"><div id="v5VaultHeader" class="v5-hidden"><button type="button" class="btn secondary v5-back" onclick="v5Home()">← 作品一覧（ホーム）へ戻る</button><div class="v5-folder-bar"><div class="v53-title-edit"><h2 id="v5FolderName"></h2><button type="button" class="v53-title-pencil" aria-label="作品名を編集" title="作品名を編集" onclick="v53ShowRename()">✎</button></div><button class="btn" type="button" onclick="v5Add()">＋ 資料を追加</button></div><div id="v53RenamePanel" class="v53-rename-panel hide"><label class="field">作品名<input id="v53RenameInput" maxlength="120" autocomplete="off" placeholder="新しい作品名"></label><div class="row"><button type="button" class="btn" onclick="v53CommitRename()">変更を保存</button><button type="button" class="btn secondary" onclick="v53HideRename()">キャンセル</button></div><p class="muted">作品名だけを変更します。保存済みの文章・画像・資料の保護状態は維持されます。</p></div><p class="v5-subheading"><strong>保存した資料</strong></p></div><div class="card"><div class="itemhead"><h2>文章・画像の保管庫</h2><button class="btn" onclick="showItemForm()">＋ 追加</button></div><div id="itemForm" class="hide"><label class="field">保管名<input id="iName" maxlength="120" placeholder="例：顔・毛並み基準画像"></label><p id="v5AutoLocation" class="v5-auto-location" aria-live="polite"></p><label class="field v5-legacy-destination">保管先<select id="iProduct"></select></label><input type="hidden" id="iType" value="mixed"><p class="muted" style="margin:8px 0 2px">文章だけ・画像だけ・両方、どれでも保存できます。</p><div id="textInput"><label class="field">保存する文章<textarea id="iText" placeholder="タイトル、説明文、プロンプトなど"></textarea></label></div><div id="imageInput"><label class="field">＋ 画像を追加（複数選択可・各3MB以下）<input type="file" id="iFile" accept="image/png,image/jpeg,image/webp" multiple onchange="onSelectedImages(this.files)"><div id="selectedImages" class="image-stack" aria-live="polite"></div></label><p class="muted">選んだ画像は下に表示されます。間違えた画像は保存前に1枚ずつ外せます。大量画像は保存できない場合があります。</p></div><div class="row"><button class="btn" onclick="saveItem()">保存</button><button class="btn secondary" onclick="hideItemForm()">キャンセル</button></div><div class="line"></div></div><label class="field">保管先で絞り込み<select id="filter" onchange="renderItems()"></select></label><div class="vault-search-v047"><label class="field" for="vaultSearchV047">保存名・文章を検索<input type="search" id="vaultSearchV047" placeholder="例：基準画像、プロンプト" oninput="renderItems()" autocomplete="off"></label><div class="vault-search-foot-v047"><span id="vaultSearchCountV047" class="muted" aria-live="polite"></span><button type="button" class="btn secondary" onclick="resetVaultSearchV047()">条件をクリア</button></div></div><div id="itemList"></div></div></section>
+<section id="backup" class="hide"><div class="v52-settings-home"><button type="button" class="btn secondary" onclick="v5Home()" aria-label="作品一覧（ホーム）へ戻る">← 作品一覧（ホーム）へ戻る</button></div><div class="v52-import" id="v52ImportBlock"><h3>📥 作品をまとめて追加（v0.5.2 テスト）</h3><p>こげもち・もふまる・スライミー・note記事などの作品情報を、既存データを残したまま追加します。<strong>現在は作品名・種類・進捗・管理メモだけに対応</strong>。画像やZIPの読み込みには未対応です。</p><button type="button" class="btn secondary" onclick="v52KogemochiPreview()">🐻 こげもち第1〜12弾を確認（ダウンロード不要）</button><p class="muted">既存の第9弾・第11弾は同名・同種類なら自動スキップします。登録前に件数を確認してください。進捗は未確認として登録し、既存作品の進捗は変更しません。</p><button type="button" class="btn secondary" onclick="v52DemoPreview()">🧪 練習データ2件を読み込む（ダウンロード不要）</button><label class="field">取り込み用JSONファイル<input type="file" id="v52File" accept=".json,application/json" onchange="v52Preview()"></label><div id="v52Result" class="v52-preview" aria-live="polite">ファイルを選ぶと、追加・重複の件数を確認できます。取り込みは自動実行されません。</div><label><input type="checkbox" id="v52Agree" onchange="v52Toggle()"> 現在のデータをバックアップ済みで、追加内容を確認しました</label><div><button type="button" id="v52Run" class="btn" disabled onclick="v52Commit()">確認した作品だけ追加</button></div></div><div class="v52-import" id="v52PhrasesBlock"><h3>📚 こげもち正式40フレーズを追加（テスト）</h3><p>マスター台帳v2.1で確認できた第1〜11弾・440フレーズを、作品フォルダごとに文章資料として追加します。<strong>第12弾は台帳に正式40件がないため対象外</strong>です。既存資料は上書きしません。</p><button class="btn secondary" type="button" onclick="v52PhrasePreview()">🐻 第1〜11弾の資料を確認</button><div id="v52PhraseResult" class="v52-preview" aria-live="polite">確認ボタンで対象作品・追加予定資料を表示します。</div><label><input type="checkbox" id="v52PhraseAgree" onchange="v52PhraseToggle()"> 最新のJSONバックアップを保存し、追加内容を確認しました</label><div><button type="button" class="btn" id="v52PhraseRun" disabled onclick="v52PhraseCommit()">確認したフレーズ資料を追加</button></div></div><div class="v52-import" id="v52PromptBlock"><h3>📝 制作プロンプトを作品へ保存</h3><p>実際に制作に使った最終プロンプトの<strong>原文全文</strong>を、対応する作品へ保存します。本文は書き換えず、同名資料が存在する場合は追加できません。</p><label class="field">保存先の作品<select id="v52PromptProduct" onchange="v52PromptReset()"><option value="">作品を選択してください</option></select></label><label class="field">プロンプトの管理名<input id="v52PromptName" placeholder="例：Work用・完全統合制作プロンプト Ver.1.0" maxlength="120" oninput="v52PromptReset()"></label><label class="field">原文全文を貼り付け<textarea id="v52PromptText" rows="9" placeholder="正式な制作プロンプトを省略せず貼り付けてください" oninput="v52PromptReset()"></textarea></label><p class="muted">資料が長い場合は、テキストファイル（.txt / .md）から読み込むこともできます。</p><input type="file" id="v52PromptFile" accept=".txt,.md,text/plain,text/markdown" onchange="v52PromptReadFile(this)"><div class="row" style="margin-top:12px"><button class="btn secondary" type="button" onclick="v52PromptPreview()">① 保存内容を確認</button></div><div id="v52PromptResult" class="v52-preview" aria-live="polite">保存先と原文を指定して、確認ボタンを押してください。</div><label><input id="v52PromptAgree" type="checkbox" onchange="v52PromptToggle()"> 最新のJSONバックアップを保存し、原文・保存先を確認しました</label><div><button type="button" class="btn" id="v52PromptRun" disabled onclick="v52PromptCommit()">② この作品に原文を保存</button></div></div><div class="universal-import" id="universalImportBlock">
+<h3>📥 作品・プロンプトをまとめて取り込む</h3>
+<p>今後はアプリ更新不要。ChatGPTから受け取った<strong>つくログ専用JSON</strong>を選ぶだけで、作品の追加と制作プロンプトの登録をまとめて確認できます。既存資料は上書きしません。</p>
+<label class="field">つくログ取り込みファイル（.json）<input type="file" id="universalFile" accept=".json,application/json" onchange="universalPreview()"></label>
+<div id="universalResult" class="universal-preview" aria-live="polite">ファイルを選ぶと、追加・スキップの内容を表示します。自動保存はしません。</div>
+<label><input type="checkbox" id="universalAgree" onchange="universalToggle()"> 最新のJSONバックアップを保存し、追加内容・保存先を確認しました</label>
+<button type="button" class="btn" id="universalRun" disabled onclick="universalCommit()">確認したデータだけ追加</button>
+<details style="margin-top:16px"><summary>取り込みJSONの形式を見る</summary><pre class="universal-guide">{"format":"tsukulog.universal-import.v1","products":[{"name":"新しい作品名","type":"LINE絵文字","status":"企画中","note":""}],"resources":[{"productName":"新しい作品名","productType":"LINE絵文字","name":"制作プロンプト｜最終版","text":"原文全文"}]}</pre><p class="muted">既存の作品へ追加する場合はproductsは空配列でも構いません。同じ作品名でも種類が異なると別作品として扱います。原文は変更しません。</p></details>
+</div><div class="v52-import" id="v52PromptBatchBlock"><h3>📚 制作指示書をまとめて確認（テスト）</h3><p>確認できた過去資料2件を全文のまま候補表示します。<strong>制作で実際に使用した最終版かは未確認</strong>です。確認できた資料のみチェックして追加してください。既存資料は上書きしません。</p><button class="btn secondary" type="button" onclick="v52BatchPreview()">🐻 第3・4弾の候補を確認</button><div id="v52BatchResult" class="v52-preview" aria-live="polite">ボタンを押すと保存先・文字数・既存資料との重複を確認します。</div><label><input type="checkbox" id="v52BatchBackup" onchange="v52BatchToggle()"> 最新JSONバックアップを保存しました</label><label><input type="checkbox" id="v52BatchVerify" onchange="v52BatchToggle()"> 選択した資料は「最終版未確認の参考指示書」として保存することを理解しました</label><div><button class="btn" type="button" id="v52BatchRun" disabled onclick="v52BatchCommit()">チェックした参考指示書を追加</button></div></div><div class="card"><h2>データを書き出す</h2><p class="muted">商品情報・文章・登録画像をまとめてJSON形式でバックアップします。iPhoneでは共有メニューや「ファイル」に保存してください。</p><div id="backupSummary" class="safe-panel" aria-live="polite"></div><button class="btn" onclick="exportData()">↓ バックアップを保存</button></div><div class="card"><h2>バックアップから復元</h2><p class="muted">復元すると現在の登録内容が置き換わります。必要なら先に現在のデータをバックアップしてください。</p><label class="field">JSONファイルを選択<input id="importFile" type="file" accept=".json,application/json"></label><button class="btn secondary" onclick="previewImport()">① ファイル内容を確認</button><div id="restorePreview" class="safe-panel hide" aria-live="polite"></div><label id="restoreAgreeLabel" class="field hide"><input type="checkbox" id="restoreAgree" onchange="updateRestoreButton()"> 現在のデータが置き換わることを理解しました</label><button id="restoreExecute" class="btn secondary hide" onclick="importData()" disabled>② 確認して復元</button></div><div class="card"><h2>管理上の注意</h2><p class="muted">このアプリではアカウント登録、オンライン同期、複数端末間共有、販売サイトへの登録・投稿はできません。機密情報・パスワードは登録しないでください。</p><p class="muted">誤操作を防ぐため、削除するには確認欄へ「全削除」と入力してください。</p><input id="deleteConfirmText" placeholder="全削除" autocomplete="off" oninput="updateDeleteButton()"><button id="deleteExecute" class="btn warn" onclick="clearData()" disabled>全登録データを削除</button></div></section><footer>つくログ v0.5.4 作品フォルダ削除テスト版・個人利用向け</footer></main><div id="renameDialog" class="rename-overlay hide" role="dialog" aria-modal="true" aria-labelledby="renameTitle"><div class="rename-panel"><h2 id="renameTitle">名前を変更</h2><label class="field">新しい名前<input id="renameValue" maxlength="32"></label><p class="muted">登録済みの商品も更新します。商品・文章・画像は削除しません。</p><div class="row"><button type="button" class="btn" onclick="confirmRename()">変更を保存</button><button type="button" class="btn secondary" onclick="cancelRename()">キャンセル</button></div></div></div><div id="toast" role="status"></div>
+<script>
+'use strict';function toggleProductCustom(){const d=document.getElementById('productCustom');d.open=!d.open;document.getElementById('customToggle').setAttribute('aria-expanded',String(d.open));}const KEY='tsukulog.v035.test';const PREVIOUS_KEY='tsukulog.v034.test';let db={products:[],items:[],types:['LINE絵文字','note記事','デジタル商品','その他'],statuses:['企画中','制作中','検品中','完成','公開済み']};try{const d=JSON.parse(localStorage.getItem(KEY)||localStorage.getItem(PREVIOUS_KEY)||'null');if(d&&Array.isArray(d.products)&&Array.isArray(d.items))db={...db,...d}}catch{}const $=id=>document.getElementById(id);const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));const id=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,8);function alertToast(s){$('toast').textContent=s;$('toast').style.display='block';setTimeout(()=>$('toast').style.display='none',2700)}function persist(){try{localStorage.setItem(KEY,JSON.stringify(db));render();return true}catch(e){alertToast('保存容量が不足しています。バックアップしてください');return false}}function tab(name){if(name==='backup')setTimeout(()=>{updateBackupSummary();resetRestorePreview()},0);document.querySelectorAll('main section').forEach(el=>el.classList.toggle('hide',el.id!==name));document.querySelectorAll('nav button').forEach(el=>el.classList.toggle('active',el.dataset.tab===name));render()}document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>tab(b.dataset.tab));function showProductForm(){$('productForm').classList.remove('hide')}function hideProductForm(){$('productForm').classList.add('hide')}function saveProduct(){let name=$('pName').value.trim();if(!name)return alertToast('商品名を入力してください');db.products.push({id:id(),name,type:$('pType').value,status:$('pStatus').value,note:$('pNote').value,created:new Date().toISOString()});if(persist()){$('pName').value='';$('pNote').value='';hideProductForm();alertToast('商品を登録しました')}}function changeStatus(pid,val){let p=db.products.find(p=>p.id===pid);if(p){p.status=val;persist()}}function deleteProduct(pid){if(db.items.some(i=>i.product===pid&&i.locked))return alertToast('確定済みデータがある商品の削除はできません');let p=db.products.find(p=>p.id===pid);if(!p||!confirm('「'+p.name+'」を削除しますか？ 紐づく保管アイテムは共通保管庫に移動します。'))return;db.products=db.products.filter(p=>p.id!==pid);db.items.forEach(i=>{if(i.product===pid)i.product=''});persist()}function showItemForm(){fillSelects();$('itemForm').classList.remove('hide')}function hideItemForm(){$('itemForm').classList.add('hide')}function toggleItemType(){$('textInput').classList.toggle('hide',!['text','mixed'].includes($('iType').value));$('imageInput').classList.toggle('hide',!['image','mixed'].includes($('iType').value))}async function saveItem(){let name=$('iName').value.trim(),type=$('iType').value;if(!name)return alertToast('保管名を入力してください');let value='';if(type==='text'||type==='mixed'){value=$('iText').value;if(type==='text'&&!value.trim())return alertToast('文章を入力してください')}let imageData='';if(type==='image'||type==='mixed'){let f=$('iFile').files[0];if(!f&&type==='image')return alertToast('画像を選択してください');if(f){if(f.size>3*1024*1024)return alertToast('画像は3MB以下にしてください');if(!['image/png','image/jpeg','image/webp'].includes(f.type))return alertToast('対応しない画像形式です');imageData=await new Promise((resolve,reject)=>{let r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=reject;r.readAsDataURL(f)});if(type==='image')value=imageData;}}if(type==='mixed'&&!value.trim()&&!imageData)return alertToast('文章または画像を追加してください');db.items.push({id:id(),name,type,value,imageData,product:$('iProduct').value,locked:false,created:new Date().toISOString()});if(persist()){$('iName').value='';$('iText').value='';$('iFile').value='';hideItemForm();alertToast('保管しました')}else db.items.pop()}
+function fillSelects(){updateCustomOptions();let opts='<option value="">共通保管庫</option>'+db.products.map(p=>`<option value="${esc(p.id)}">${esc(p.name)}</option>`).join('');let chosen=$('iProduct').value,filter=$('filter').value;$('iProduct').innerHTML=opts;$('filter').innerHTML='<option value="all">すべての保管先</option>'+opts;$('iProduct').value=chosen||'';$('filter').value=filter||'all'}/* v0.4.4: chronological product history, read-only UI settings in memory. */
+const productTimelineOrders={};
+function getProductTimelineOrder(pid){return productTimelineOrders[pid]==='old'?'old':'new'}
+function setProductTimelineOrder(pid,order){productTimelineOrders[pid]=order==='old'?'old':'new';render()}
+function sortProductTimeline(items,order){return [...items].sort((a,b)=>{const at=Date.parse(a.created||'')||0,bt=Date.parse(b.created||'')||0;return (order==='old'?at-bt:bt-at)||String(a.id).localeCompare(String(b.id))})}
+function formatTimelineDate(iso){const t=Date.parse(iso||'');if(!Number.isFinite(t))return '日時未記録';return new Intl.DateTimeFormat('ja-JP',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}).format(new Date(t))}
+function resetProductSearchV045(){'productSearchV045 productTypeFilterV045 productStatusFilterV045'.split(' ').forEach(id=>$(id).value='');render()}
+let openProductV046=null;function toggleProductV046(event,id){event.preventDefault();openProductV046=openProductV046===id?null:id;render();}
+function render(){ updateCustomOptions(); $('countProducts').textContent=db.products.length;$('countItems').textContent=db.items.length;fillSelects();const searchBox=$('productSearchV045');const typeBox=$('productTypeFilterV045');const statusBox=$('productStatusFilterV045');const query=searchBox.value.trim().toLocaleLowerCase('ja-JP');const chosenType=typeBox.value;const chosenStatus=statusBox.value;const types=[...new Set([...db.types,...db.products.map(p=>p.type).filter(Boolean)])];const statuses=[...new Set([...db.statuses,...db.products.map(p=>p.status).filter(Boolean)])];typeBox.innerHTML='<option value="">すべての種類</option>'+types.map(x=>`<option value="${esc(x)}">${esc(x)}</option>`).join('');statusBox.innerHTML='<option value="">すべての進捗</option>'+statuses.map(x=>`<option value="${esc(x)}">${esc(x)}</option>`).join('');typeBox.value=chosenType;statusBox.value=chosenStatus;const filteredProducts=db.products.filter(p=>(!query||String(p.name||'').toLocaleLowerCase('ja-JP').includes(query)||String(p.note||'').toLocaleLowerCase('ja-JP').includes(query))&&(!chosenType||p.type===chosenType)&&(!chosenStatus||p.status===chosenStatus));$('productSearchCountV045').textContent=`${filteredProducts.length}件表示 / 全${db.products.length}件`;$('productList').innerHTML=filteredProducts.length?filteredProducts.map(p=>`<details class="item product-accordion-v046" ${openProductV046===p.id?'open':''}><summary class="product-summary-v046" onclick="toggleProductV046(event,'${p.id}')"><span class="product-name-v046">${esc(p.name)}</span><span class="product-meta-v046"><span class="tag">${esc(p.type)}</span><span class="tag">${esc(p.status||'進捗未設定')}</span></span></summary><div class="product-body-v046"><label class="field">進捗<select onchange="changeStatus('${p.id}',this.value)">${db.statuses.concat(p.status&&!db.statuses.includes(p.status)?[p.status]:[]).map(s=>`<option ${p.status===s?'selected':''}>${s}</option>`).join('')}</select></label>${p.note?`<div class="snippet">${esc(p.note)}</div><div class="row"><button class="btn secondary" onclick="copyText(${JSON.stringify(p.id)},'product')">メモをコピー</button></div>`:''}<div class="product-related-v043"><div class="product-related-head-v043"><strong>関連する保管データ</strong><span class="tag">${db.items.filter(i=>i.product===p.id).length}件</span></div>${db.items.some(i=>i.product===p.id)?`<div class="timeline-tools-v044"><span class="muted">制作履歴（保存日時順）</span><select aria-label="${esc(p.name)}の表示順" onchange="setProductTimelineOrder('${p.id}',this.value)"><option value="new" ${getProductTimelineOrder(p.id)==='new'?'selected':''}>新しい順</option><option value="old" ${getProductTimelineOrder(p.id)==='old'?'selected':''}>古い順</option></select></div>${sortProductTimeline(db.items.filter(i=>i.product===p.id),getProductTimelineOrder(p.id)).map(i=>`<button type="button" class="related-link-v043 timeline-entry-v044" onclick="openProductVault('${p.id}','${i.id}')"><span class="timeline-main-v044"><span class="related-name-v043">${esc(i.name)}</span><small class="timeline-date-v044">${formatTimelineDate(i.created)}${i.sourceId?' · 修正版':''}</small></span><span class="status-v038 ${i.locked?'status-locked-v038':'status-draft-v038'}">${i.locked?'🔒 保護中':'下書き'}</span><span aria-hidden="true">›</span></button>`).join('')}`:'<p class="muted related-empty-v043">この商品に紐づく保管データはまだありません。</p>'}</div><div class="row" style="margin-top:10px"><button class="btn secondary" onclick="openProductVault('${p.id}')">関連保管庫を開く</button><button class="btn warn" onclick="deleteProduct('${p.id}')">削除</button></div></div></details>`).join(''):(db.products.length?'<div class="empty">一致する商品がありません。検索条件を変えてください。</div>':'<div class="empty">まだ商品がありません。最初の作品を追加しましょう。</div>');renderItems()}function renderItems(){let f=$('filter').value;let items=db.items.filter(i=>f==='all'||i.product===f);$('itemList').innerHTML=items.length?items.map(i=>`<div class="item"><div class="itemhead"><strong>${esc(i.name)}</strong><span class="tag">${esc(db.products.find(p=>p.id===i.product)?.name||'共通')}</span></div>${(i.type==='image'||i.imageData)?`<img class="thumb" src="${i.type==='image'?i.value:i.imageData}" alt="${esc(i.name)}">`:''}${i.type!=='image'&&i.value?`<div class="snippet">${esc(i.value)}</div>`:''}<div class="row" style="margin-top:10px">${i.type!=='image'&&i.value?`<button class="btn secondary" onclick="copyText('${i.id}','item')">コピー</button>`:''}${(i.type==='image'||i.imageData)?`<button class="btn secondary" onclick="downloadImage('${i.id}')">画像を保存</button>`:''}<button class="btn warn" onclick="deleteItem('${i.id}')" ${i.locked?'disabled title="確定データは削除できません"':''}>削除</button></div><div class="row extra">${i.locked?'<span class="tag">🔒 確定・保護中</span>':`<button class="chip" onclick="reviseItem('${i.id}')">下書き ✎</button>`}${i.locked?`<button class="btn secondary" onclick="unlockItem('${i.id}')">🔓 保護を解除</button>`:`<button class="btn secondary" onclick="lockItem('${i.id}')">確定して保護</button>`}<button class="btn secondary" onclick="reviseItem('${i.id}')">修正版を追加</button></div>${i.sourceId?`<div class="muted">修正元ID: ${esc(i.sourceId)}</div>`:''}</div>`).join(''):'<div class="empty">保管アイテムがありません。</div>'}async function copyText(id,type){let s=type==='item'?db.items.find(x=>x.id===id)?.value:db.products.find(x=>x.id===id)?.note;if(!s)return;try{await navigator.clipboard.writeText(s);alertToast('コピーしました')}catch{let t=document.createElement('textarea');t.value=s;document.body.appendChild(t);t.select();let ok=document.execCommand('copy');t.remove();alertToast(ok?'コピーしました':'コピーできません。文章を長押ししてください')}}function deleteItem(id){if(db.items.find(i=>i.id===id)?.locked)return alertToast('確定済みデータは削除できません');if(!confirm('この保管アイテムを削除しますか？'))return;db.items=db.items.filter(i=>i.id!==id);persist()}async function downloadImage(id){
+ const i=db.items.find(x=>x.id===id);if(!i||!(i.type==='image'||i.imageData))return;
+ const data=i.type==='image'?i.value:i.imageData; if(typeof data!=='string'||!data.startsWith('data:image/'))return alertToast('画像データを確認できません');
+ const mime=(data.match(/^data:([^;,]+)/)||[])[1]||'image/png';
+ const ext=mime==='image/jpeg'?'jpg':mime==='image/webp'?'webp':'png';
+ const filename=(i.name||'image').replace(/[\\/:*?"<>|]/g,'_')+'.'+ext;
+ try{
+   const blob=await (await fetch(data)).blob();
+   const file=new File([blob],filename,{type:mime});
+   if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){
+     try{await navigator.share({files:[file],title:filename});return}
+     catch(err){if(err&&err.name==='AbortError')return}
+   }
+   const url=URL.createObjectURL(blob);
+   const a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();
+   setTimeout(()=>URL.revokeObjectURL(url),60000);
+   alertToast('保存されない場合はSafariから開いてください');
+ }catch(e){alertToast('画像を書き出せませんでした')}
+}function dataCounts(d){return {products:Array.isArray(d.products)?d.products.length:0,items:Array.isArray(d.items)?d.items.length:0,images:Array.isArray(d.items)?d.items.reduce((n,i)=>n+(Array.isArray(i.images)?i.images.length:(i.image?1:0)),0):0};}
+function countText(c){return `商品 ${c.products}件 ／ 保管アイテム ${c.items}件 ／ 画像 ${c.images}枚`;}
+function updateBackupSummary(){let c=dataCounts(db),el=$('backupSummary');if(!el)return;let empty=!c.products&&!c.items;el.className='safe-panel'+(empty?' warning':'');el.innerHTML=`<strong>現在のバックアップ対象</strong><p>${countText(c)}</p>${empty?'<p>⚠ 商品・保管データが0件です。別のブラウザや保存環境で開いていないか確認してください。</p>':'<p>保存したJSONは「ファイル」でサイズを確認し、大切に保管してください。</p>'}`;}
+function exportData(){let c=dataCounts(db);if(!c.products&&!c.items&&!confirm('⚠ 商品0件・保管アイテム0件です。空のバックアップを作成しますか？'))return;let b=new Blob([JSON.stringify({format:'tsukulog.v1',date:new Date().toISOString(),...db},null,2)],{type:'application/json'});let url=URL.createObjectURL(b),a=document.createElement('a');a.href=url;a.download='tsukulog-backup-'+new Date().toISOString().slice(0,10)+'.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);alertToast('バックアップを作成しました。保存ファイルのサイズを確認してください');}
+let pendingRestore=null;
+function resetRestorePreview(){pendingRestore=null;let p=$('restorePreview'),agree=$('restoreAgree'),label=$('restoreAgreeLabel'),execute=$('restoreExecute');if(p){p.classList.add('hide');p.textContent='';}if(agree)agree.checked=false;if(label)label.classList.add('hide');if(execute){execute.classList.add('hide');execute.disabled=true;}}
+function updateRestoreButton(){$('restoreExecute').disabled=!pendingRestore||!$('restoreAgree').checked;}
+async function previewImport(){resetRestorePreview();let f=$('importFile').files[0];if(!f)return alertToast('JSONファイルを選択してください');let d;try{d=JSON.parse(await f.text())}catch{return alertToast('JSONを読み込めません')}
+if(!d||d.format!=='tsukulog.v1'||!Array.isArray(d.products)||!Array.isArray(d.items)||d.products.some(p=>typeof p.id!=='string'||typeof p.name!=='string')||d.items.some(i=>typeof i.id!=='string'||typeof i.value!=='string'||!['image','text','mixed'].includes(i.type)))return alertToast('つくログのバックアップ形式ではありません');
+pendingRestore={d,file:f};let before=dataCounts(db),after=dataCounts(d);let empty=!after.products&&!after.items;let p=$('restorePreview');p.className='safe-panel'+(empty?' warning':'');p.innerHTML=`<strong>復元前の比較</strong><p>現在：${countText(before)}</p><p>復元後：${countText(after)}</p><p>ファイル：${esc(f.name)}（${Math.round(f.size/1024)} KB）</p><p>⚠ 復元すると現在の登録内容を置き換えます。</p>${empty?'<p><strong>⚠ このバックアップの商品・保管アイテムは0件です。通常の復元はできません。</strong></p>':''}`;
+if(empty){pendingRestore=null;return;} $('restoreAgreeLabel').classList.remove('hide');$('restoreExecute').classList.remove('hide');}
+async function importData(){if(!pendingRestore||!$('restoreAgree').checked)return alertToast('先に内容を確認してください');if($('importFile').files[0]!==pendingRestore.file)return alertToast('ファイルが変わりました。再確認してください');let d=pendingRestore.d,before=dataCounts(db),after=dataCounts(d);if(!confirm(`現在：${countText(before)}\n復元後：${countText(after)}\n\n現在のデータを置き換えます。実行しますか？`))return;let old=db;db={...db,products:d.products,items:d.items,types:Array.isArray(d.types)?d.types:db.types,statuses:Array.isArray(d.statuses)?d.statuses:db.statuses};if(!persist()){db=old;render();alertToast('復元できませんでした。元データを保持しています');}else{resetRestorePreview();updateBackupSummary();alertToast('復元しました')}}
+function updateDeleteButton(){let e=$('deleteExecute');if(e)e.disabled=$('deleteConfirmText').value!=='全削除'}
+function clearData(){if($('deleteConfirmText').value!=='全削除')return;if(!confirm('現在のデータをすべて削除します。バックアップは保存しましたか？'))return;if(!confirm('最終確認：商品・文章・画像を削除します。実行しますか？'))return;let old=db;db={...db,products:[],items:[]};if(!persist()){db=old;render();return}$('deleteConfirmText').value='';updateDeleteButton();updateBackupSummary();alertToast('削除しました')}
+$('importFile').addEventListener('change',resetRestorePreview);
+// Initialize the option-menu state before first render.
+let activeManageOption=null;
+render();
+
+function updateCustomOptions(){
+  db.types=Array.isArray(db.types)?db.types:['LINE絵文字','note記事','デジタル商品','その他'];
+  db.statuses=Array.isArray(db.statuses)?db.statuses:['企画中','制作中','検品中','完成','公開済み'];
+  for(const [element,values] of [['pType',db.types],['pStatus',db.statuses]]){
+    const el=$(element),old=el.value; const needed=old&&!values.includes(old)?values.concat(old):values;
+    el.innerHTML=needed.map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join('');
+    if(old)el.value=old;
+  }
+  if($('typeChips'))$('typeChips').innerHTML=optionManageRows('types');
+  if($('statusChips'))$('statusChips').innerHTML=optionManageRows('statuses');
+}
+// v0.5.1: options order and safe deletion. User-defined order is stored in db.
+function toggleManageOption(which,index){
+ const key=which+':'+index;
+ activeManageOption=activeManageOption===key?null:key;
+ updateCustomOptions();
+}
+function optionManageRows(which){
+ const values=db[which]||[];
+ return values.map((v,i)=>{
+  const inUse=db.products.some(p=>(which==='types'?p.type:p.status)===v);
+  const opened=activeManageOption===which+':'+i;
+  return `<div class="simple-option-item"><button type="button" class="simple-option-title" aria-expanded="${opened}" onclick="toggleManageOption('${which}',${i})"><span>${esc(v)}</span><span aria-hidden="true">${opened?'⌃':'⌄'}</span></button>${opened?`<div class="simple-option-actions"><button type="button" ${i===0?'disabled':''} onclick="moveOption('${which}',${i},-1)">↑ <span>上へ</span></button><button type="button" ${i===values.length-1?'disabled':''} onclick="moveOption('${which}',${i},1)">↓ <span>下へ</span></button><button type="button" onclick="openRename('${which}',${i})">✎ <span>編集</span></button><button type="button" class="option-action-delete" ${inUse||values.length===1?'disabled':''} onclick="removeOption('${which}',${i})">× <span>削除</span></button></div>${inUse?'<p class="simple-option-note">商品で使用中のため削除できません</p>':''}`:''}</div>`;
+ }).join('');
+}
+function switchOptionPanel(which){
+ document.querySelectorAll('.simple-option-tab').forEach(btn=>{const on=btn.dataset.which===which;btn.classList.toggle('selected',on);btn.setAttribute('aria-selected',String(on));});
+ document.getElementById('simpleTypePanel').classList.toggle('hide',which!=='types');
+ document.getElementById('simpleStatusPanel').classList.toggle('hide',which!=='statuses');
+ activeManageOption=null;updateCustomOptions();
+}
+function moveOption(which,index,direction){
+ const values=db[which];if(!Array.isArray(values))return;
+ const next=index+direction;if(index<0||next<0||next>=values.length)return;
+ const old=values.slice();[values[index],values[next]]=[values[next],values[index]];activeManageOption=which+':'+next;
+ if(!persist()){db[which]=old;render();return}
+ alertToast('順番を変更しました');
+}
+function removeOption(which,index){
+ const values=db[which];if(!Array.isArray(values)||values.length<=1||index<0||index>=values.length)return;
+ const value=values[index];const field=which==='types'?'type':'status';
+ if(db.products.some(p=>p[field]===value))return alertToast('既存商品で使用中のため削除できません');
+ if(!confirm(`「${value}」を選択肢から削除しますか？\n商品・保存資料は削除されません。`))return;
+ const old=values.slice();values.splice(index,1);activeManageOption=null;
+ if(!persist()){db[which]=old;render();return}
+ alertToast('選択肢を削除しました');
+}
+function addOption(which){const input=$(which==='types'?'newType':'newStatus');const value=input.value.trim();if(!value)return;
+ if(db[which].includes(value))return alertToast('同じ名前が登録されています');db[which].push(value);input.value='';persist();alertToast('追加しました')}
+let renameTarget=null;
+function openRename(which,index){
+ const old=db[which]?.[index];if(typeof old!=='string')return;
+ renameTarget={which,index,old};$('renameTitle').textContent=(which==='types'?'商品の種類':'進捗')+'を変更';
+ $('renameValue').value=old;$('renameDialog').classList.remove('hide');$('renameValue').focus();
+}
+function cancelRename(){renameTarget=null;$('renameDialog').classList.add('hide')}
+function confirmRename(){
+ if(!renameTarget)return;const {which,index,old}=renameTarget;
+ const value=$('renameValue').value.trim().slice(0,32);
+ if(!value)return alertToast('名前を入力してください');
+ if(value!==old&&db[which].includes(value))return alertToast('同じ名前が存在します');
+ if(value===old){cancelRename();return}
+ // v0.3既存形式では商品に選択肢の文字列が保存されているため、参照中の商品も更新
+ const snapshot=JSON.stringify(db);
+ db[which][index]=value;
+ for(const product of db.products){if(which==='types'&&product.type===old)product.type=value;
+ if(which==='statuses'&&product.status===old)product.status=value}
+ if(!persist()){db=JSON.parse(snapshot);render();return}
+ cancelRename();alertToast('名前を変更しました');
+}
+function lockItem(itemId){const item=db.items.find(i=>i.id===itemId);if(!item||item.locked)return;
+ if(!confirm('確定して保護しますか？ 確定後の削除はできません。修正は別データとして追加します。'))return;
+ const previous={locked:!!item.locked,lockedAt:item.lockedAt};
+ item.locked=true;item.lockedAt=new Date().toISOString();
+ if(!persist()){item.locked=previous.locked;item.lockedAt=previous.lockedAt;render();return}
+ alertToast('確定して保護しました');}
+function unlockItem(itemId){
+ const item=db.items.find(i=>i.id===itemId);
+ if(!item||!item.locked)return;
+ if(!confirm('この保管記録の保護を解除しますか？\n解除後は削除できる状態になります。文章・画像・修正履歴は変更しません。'))return;
+ const previous={locked:item.locked,lockedAt:item.lockedAt};
+ item.locked=false;delete item.lockedAt;
+ if(!persist()){item.locked=previous.locked;item.lockedAt=previous.lockedAt;render();return}
+ alertToast('保護を解除しました');
+}
+function reviseItem(itemId){const item=db.items.find(i=>i.id===itemId);if(!item)return;
+ tab('vault');showItemForm();$('iName').value=item.name+' 修正版';$('iProduct').value=item.product||'';$('iType').value=item.type;toggleItemType();
+ if(item.type==='text'||item.type==='mixed')$('iText').value=item.value;
+ if(item.type==='image'||item.imageData)alertToast('必要なら修正版の画像を選択してください');
+ window.pendingRevisionOf=itemId;document.getElementById('itemForm').scrollIntoView({behavior:'smooth',block:'start'});
+}
+const originalSaveItem=saveItem;
+saveItem=async function(){const before=db.items.length;const revision=window.pendingRevisionOf;await originalSaveItem();if(db.items.length>before&&revision){const last=db.items[db.items.length-1];last.sourceId=revision;window.pendingRevisionOf=null;persist();}};
+const originalHideItemForm=hideItemForm;
+hideItemForm=function(){window.pendingRevisionOf=null;originalHideItemForm()};
+
+
+/* v0.3.4: separate storage key, multi-image selection, revision-safe image history */
+let stagedImages=[];
+let retainedImages=[];
+function getImages(item){
+  if(Array.isArray(item.images)&&item.images.length){return item.images.filter(x=>x&&typeof x.data==='string'&&x.data.startsWith('data:image/')).map(x=>({id:x.id||id(),name:x.name||'画像',data:x.data}));}
+  const legacy=item.imageData||(item.type==='image'?item.value:'');
+  return typeof legacy==='string'&&legacy.startsWith('data:image/')?[{id:item.id+'-legacy',name:item.name||'画像',data:legacy}]:[];
+}
+function renderSelectedImages(){
+ const items=[...retainedImages.map(x=>({...x,kind:'retained'})),...stagedImages.map(x=>({...x,kind:'staged'}))];
+ $('selectedImages').innerHTML=items.map(x=>`<div class="image-row"><img src="${x.data}" alt=""><span class="image-name">${esc(x.name)}</span><button type="button" class="btn warn" onclick="removeSelectedImage('${x.kind}','${x.id}')" aria-label="${esc(x.name)}を外す">削除</button></div>`).join('')||'<p class="muted">選択された画像はありません。</p>';
+}
+function removeSelectedImage(kind,imageId){if(kind==='retained')retainedImages=retainedImages.filter(x=>x.id!==imageId);else stagedImages=stagedImages.filter(x=>x.id!==imageId);renderSelectedImages();}
+async function onSelectedImages(files){
+ const batch=Array.from(files||[]);$('iFile').value='';
+ for(const file of batch){
+  if(!['image/png','image/jpeg','image/webp'].includes(file.type)){alertToast('PNG・JPEG・WebPのみ選べます');continue;}
+  if(file.size>3*1024*1024){alertToast('1枚3MB以下の画像を選んでください');continue;}
+  try{const data=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(file)});stagedImages.push({id:id(),name:file.name,data});}catch(e){alertToast('画像を読み込めませんでした');}
+ }
+ renderSelectedImages();
+}
+const v034ShowItemForm=showItemForm;
+showItemForm=function(){v034ShowItemForm();retainedImages=[];stagedImages=[];renderSelectedImages();};
+const v034HideItemForm=hideItemForm;
+hideItemForm=function(){retainedImages=[];stagedImages=[];window.pendingRevisionOf=null;v034HideItemForm();};
+const v034ReviseItem=reviseItem;
+reviseItem=function(itemId){
+ const item=db.items.find(x=>x.id===itemId);if(!item)return;
+ v034ReviseItem(itemId);
+ retainedImages=getImages(item).map(x=>({...x}));stagedImages=[];
+ renderSelectedImages();
+};
+saveItem=async function(){
+ const name=$('iName').value.trim(),type=$('iType').value,product=$('iProduct').value;
+ if(!name)return alertToast('保管名を入力してください');
+ const value=type==='image'?'':$('iText').value;
+ const images=['image','mixed'].includes(type)?[...retainedImages,...stagedImages].map(x=>({id:x.id,name:x.name,data:x.data})):[];
+ if(type==='text'&&!value.trim())return alertToast('文章を入力してください');
+ if(type==='image'&&!images.length)return alertToast('画像を選択してください');
+ if(type==='mixed'&&!images.length&&!value.trim())return alertToast('文章または画像を追加してください');
+ const before=JSON.stringify(db);
+ const revision=window.pendingRevisionOf||null;
+ const item={id:id(),name,type,value:type==='image'?(images[0]?.data||''):value,imageData:images[0]?.data||'',images,product,locked:false,created:new Date().toISOString()};
+ if(revision)item.sourceId=revision;
+ db.items.push(item);
+ if(!persist()){
+  db=JSON.parse(before);render();return;
+ }
+ window.pendingRevisionOf=null;
+ $('iName').value='';$('iText').value='';$('iFile').value='';retainedImages=[];stagedImages=[];
+ hideItemForm();alertToast(revision?'修正版を保存しました':'保管しました');
+};
+/* v0.4.3: product-to-vault navigation; presentation only, no writes. */
+function openProductVault(productId,itemId=null){
+ tab('vault');
+ $('filter').value=productId;
+ expandedVaultItemId=itemId;
+ renderItems();
+ const target=itemId?document.querySelector('[data-vault-item="'+itemId+'"]'):document.getElementById('vault');
+ if(target)target.scrollIntoView({block:'start',behavior:'smooth'});
+}
+/* v0.3.9: only the visible item is expanded; no data writes on toggle. */
+let expandedVaultItemId=null;
+function toggleVaultItem(itemId){
+ expandedVaultItemId=expandedVaultItemId===itemId?null:itemId;
+ renderItems();
+ const header=document.querySelector('[data-vault-item="'+itemId+'"] .vault-summary');
+ if(header)header.focus({preventScroll:true});
+}
+function resetVaultSearchV047(){$('vaultSearchV047').value='';$('filter').value=(typeof v5Folder!=='undefined'&&v5Folder!==null&&$('vault').classList.contains('v5-mode'))?v5Folder:'all';expandedVaultItemId=null;renderItems();}
+function v5MenuIcon(type){
+ const paths={
+  edit:'<path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L8 18l-4 1 1-4Z"/>',
+  lock:'<rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/>',
+  unlock:'<rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0"/>',
+  trash:'<path d="M3 6h18M8 6V4h8v2M5 6l1 15h12l1-15M10 10v7M14 10v7"/>'
+ };
+ return '<svg class="v5-menu-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+(paths[type]||'')+'</svg>';
+}
+renderItems=function(){
+ const inFolder=(typeof v5Folder!=='undefined'&&v5Folder!==null&&$('vault').classList.contains('v5-mode'));
+ const f=inFolder?v5Folder:$('filter').value;
+ if(inFolder)$('filter').value=f;
+ const query=($('vaultSearchV047')?.value||'').trim().toLocaleLowerCase('ja-JP');
+ const scoped=db.items.filter(x=>f==='all'||(x.product||'')===f);
+ const items=scoped.filter(x=>!query||String(x.name||'').toLocaleLowerCase('ja-JP').includes(query)||(x.type!=='image'&&String(x.value||'').toLocaleLowerCase('ja-JP').includes(query)));
+ $('vaultSearchCountV047').textContent=`${items.length}件表示 / 対象${scoped.length}件（全${db.items.length}件）`;
+ const searchFoot=document.querySelector('#vault.v5-mode .vault-search-foot-v047');
+ if(searchFoot)searchFoot.hidden=!query;
+ $('itemList').innerHTML=items.length?items.map(i=>{
+  const opened=expandedVaultItemId===i.id;
+  const imgs=opened?getImages(i):[];
+  const gallery=imgs.length?`<div class="image-gallery">${imgs.map((im,j)=>`<figure><img src="${im.data}" alt="${esc(im.name)}" role="button" tabindex="0" aria-label="${esc(im.name)}を拡大" onclick="openImagePreview('${i.id}',${j})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openImagePreview('${i.id}',${j})}"><figcaption>${esc(im.name)}</figcaption><button class="btn secondary" onclick="downloadImage('${i.id}',${j})">画像を保存</button></figure>`).join('')}</div>`:'';
+  return `<div class="item item-v038 item-v039" data-vault-item="${esc(i.id)}">
+    <div class="v53-summary-line">
+      <button type="button" class="vault-summary" aria-expanded="${opened}" onclick="toggleVaultItem('${i.id}')">
+        <span class="vault-chevron" aria-hidden="true">${opened?'▾':'▸'}</span>
+        <span class="vault-name">${esc(i.name)}</span>
+      </button>
+      
+      <button type="button" class="v53-card-rename" aria-label="${esc(i.name)}の資料名を編集" title="資料名を編集" onclick="v53RenameItem('${i.id}')">✎</button>
+      <span class="status-v038 ${i.locked?'status-locked-v038':'status-draft-v038'}">${i.locked?'🔒 保護中':'下書き'}</span>
+    </div>
+    ${opened?`<div class="vault-details">
+      <div class="vault-location"><span class="tag">${esc(db.products.find(p=>p.id===i.product)?.name||'共通')}</span></div>
+      <div class="v5-clean-heading"><span class="v5-clean-title">保存した画像・文章</span><div class="v5-compact-toolbar"><div class="v5-tap-menu"><button type="button" class="v5-tap-trigger" aria-label="${esc(i.name)}の操作メニュー" aria-expanded="false" onclick="v5ToggleActionMenu(event,this)">•••</button>
+        <div class="v5-tap-content" hidden role="group" aria-label="${esc(i.name)}の操作"><button class="btn secondary v5-menu-item" onclick="reviseItem('${i.id}')"><span>修正版を追加</span>${v5MenuIcon('edit')}</button>
+          ${i.locked?`<button class="btn secondary v5-menu-item" onclick="unlockItem('${i.id}')"><span>保護を解除</span>${v5MenuIcon('unlock')}</button>`:`<button class="btn secondary v5-menu-item" onclick="lockItem('${i.id}')"><span>確定して保護</span>${v5MenuIcon('lock')}</button>`}
+          <button class="btn warn v5-menu-item" onclick="deleteItem('${i.id}')" ${i.locked?'disabled title="確定済みのため削除不可"':''}><span>削除</span>${v5MenuIcon('trash')}</button>
+        </div>
+      </div></div></div>
+      ${gallery}${i.type!=='image'&&i.value?`<div class="snippet">${esc(i.value)}</div>`:''}
+      ${i.type!=='image'&&i.value?`<div class="v5-primary-action"><button class="btn secondary" onclick="copyText('${i.id}','item')">文章をコピー</button></div>`:''}
+      ${i.sourceId?`<div class="muted">修正元ID: ${esc(i.sourceId)}</div>`:''}
+    </div>`:''}
+  </div>`;
+ }).join(''):(scoped.length?'<div class="empty">一致する保管データがありません。検索条件を変えてください。</div>':'<div class="empty">保管アイテムがありません。</div>');
+};
+
+downloadImage=async function(itemId,imageIndex=0){
+ const item=db.items.find(x=>x.id===itemId),im=item&&getImages(item)[imageIndex];if(!im)return alertToast('画像が見つかりません');
+ const match=im.data.match(/^data:([^;,]+)/),mime=match?.[1]||'image/png';
+ const ext=mime==='image/jpeg'?'jpg':mime==='image/webp'?'webp':'png';
+ const filename=(im.name||'image').replace(/[\\/:*?"<>|]/g,'_').replace(/\.(png|jpe?g|webp)$/i,'')+'.'+ext;
+ try{
+  const blob=await(await fetch(im.data)).blob(),file=new File([blob],filename,{type:mime});
+  if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){
+   try{await navigator.share({files:[file],title:filename});return;}catch(err){if(err?.name==='AbortError')return;}
+  }
+  const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);
+  alertToast('保存されない場合はSafariで開いてください');
+ }catch(e){alertToast('画像を書き出せませんでした');}
+};
+/* v0.3.5: IndexedDB image store. Metadata stays in localStorage. */
+const IMG_DB_NAME='tsukulog-images-v035';
+let imageDatabase=null,storageReady=false;
+const initialDb=JSON.parse(JSON.stringify(db));
+const gate=document.createElement('div');
+gate.id='storageGate';gate.setAttribute('role','status');gate.textContent='画像保管庫を準備しています…';
+Object.assign(gate.style,{position:'fixed',inset:'0',zIndex:'90',background:'#f3f7f6ee',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:'700',padding:'25px',textAlign:'center'});
+document.body.appendChild(gate);
+function openImageDB(){return new Promise((resolve,reject)=>{
+ const request=indexedDB.open(IMG_DB_NAME,1);
+ request.onupgradeneeded=()=>{if(!request.result.objectStoreNames.contains('images'))request.result.createObjectStore('images')};
+ request.onsuccess=()=>resolve(request.result);request.onerror=()=>reject(request.error);
+ request.onblocked=()=>reject(new Error('データベースが使用中です'));
+})}
+function imageTransaction(entries,mode='readwrite'){
+ return new Promise((resolve,reject)=>{
+  const tr=imageDatabase.transaction('images',mode),store=tr.objectStore('images');let results=[];
+  entries.forEach(([key,value])=>{let r=value===undefined?store.get(key):store.put(value,key);r.onsuccess=()=>{if(value===undefined)results.push([key,r.result])}});
+  tr.oncomplete=()=>resolve(results);tr.onerror=()=>reject(tr.error);tr.onabort=()=>reject(tr.error);
+ })
+}
+function metadataOnly(database){
+ const clean={...database,items:database.items.map(item=>{
+  const copy={...item};copy.images=(item.images||[]).map(({id,name})=>({id,name}));
+  delete copy.imageData;if(copy.type==='image')copy.value='';return copy;
+ })};return clean;
+}
+persist=function(){
+ if(!storageReady)return false;
+ try{localStorage.setItem(KEY,JSON.stringify(metadataOnly(db)));render();return true}
+ catch(e){alertToast('商品情報を保存できません。バックアップしてください');return false}
+};
+async function hydrateOrMigrate(){
+ imageDatabase=await openImageDB();
+ const entries=[];
+ for(const item of db.items){
+  if(!Array.isArray(item.images))item.images=[];
+  let imgs=getImages(item);
+  // Legacy records may have imageData but no image array.
+  if(!imgs.length&&item.imageData){imgs=[{id:item.id+'-legacy',name:item.name||'画像',data:item.imageData}];}
+  for(const img of imgs)if(img.data)entries.push([img.id,img.data]);
+  // metadata-only records get their images hydrated from IDB
+ }
+ if(entries.length)await imageTransaction(entries);
+ const missing=[];
+ for(const item of db.items){for(const img of item.images||[])if(!img.data)missing.push([img.id,undefined]);}
+ const fetched=missing.length?new Map(await imageTransaction(missing,'readonly')):new Map();
+ for(const item of db.items){
+  item.images=(item.images||[]).map(img=>({...img,data:img.data||fetched.get(img.id)||''}));
+  if(!item.images.length&&item.imageData?.startsWith('data:image/'))item.images=[{id:item.id+'-legacy',name:item.name,data:item.imageData}];
+  if(item.images.some(img=>!img.data))throw Error('保存画像の一部を読み出せませんでした');
+ }
+ storageReady=true;
+ // Persist metadata only after all image writes have succeeded. Previous version is left intact.
+ if(!persist())throw Error('商品情報の保存に失敗しました');
+}
+// Save images before publishing the item metadata. On failure, leave form and old data alone.
+saveItem=async function(){
+ if(!storageReady)return alertToast('保管庫の準備が完了していません');
+ const name=$('iName').value.trim(),type=$('iType').value,product=$('iProduct').value;
+ if(!name)return alertToast('保管名を入力してください');
+ const value=type==='image'?'':$('iText').value;
+ const images=['image','mixed'].includes(type)?[...retainedImages,...stagedImages].map(im=>({id:im.id,name:im.name,data:im.data})):[];
+ if(type==='text'&&!value.trim())return alertToast('文章を入力してください');
+ if(type==='image'&&!images.length)return alertToast('画像を選択してください');
+ if(type==='mixed'&&!images.length&&!value.trim())return alertToast('文章または画像を追加してください');
+ const revision=window.pendingRevisionOf||null;
+ const item={id:id(),name,type,value,imageData:'',images,product,locked:false,created:new Date().toISOString()};
+ if(revision)item.sourceId=revision;
+ const old=JSON.stringify(db);
+ try{
+  if(images.length)await imageTransaction(images.map(im=>[im.id,im.data]));
+  db.items.push(item);
+  if(!persist())throw Error('商品情報の保存失敗');
+ }catch(err){db=JSON.parse(old);render();alertToast('保存できませんでした。画像枚数や端末の空き容量を確認してください');return}
+ window.pendingRevisionOf=null;$('iName').value='';$('iText').value='';$('iFile').value='';
+ retainedImages=[];stagedImages=[];hideItemForm();alertToast(revision?'修正版を保存しました':'保管しました');
+};
+// Export hydrated images as standard JSON so the backup is self-contained.
+exportData=function(){
+ if(!storageReady)return alertToast('保管庫の準備中です');
+ try{
+ const b=new Blob([JSON.stringify({format:'tsukulog.v1',date:new Date().toISOString(),...db},null,2)],{type:'application/json'});
+ const url=URL.createObjectURL(b),a=document.createElement('a');a.href=url;a.download='tsukulog-backup-'+new Date().toISOString().slice(0,10)+'.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);alertToast('画像を含むバックアップを作成しました');
+ }catch(err){alertToast('バックアップを作成できませんでした')}
+};
+importData=async function(){
+ if(!storageReady)return alertToast('保管庫の準備中です');
+ const file=$('importFile').files[0];if(!file)return alertToast('ファイルを選択してください');
+ let incoming;try{incoming=JSON.parse(await file.text())}catch{return alertToast('JSONを読み込めません')}
+ if(!incoming||incoming.format!=='tsukulog.v1'||!Array.isArray(incoming.products)||!Array.isArray(incoming.items)||incoming.products.some(p=>typeof p.id!=='string'||typeof p.name!=='string')||incoming.items.some(i=>typeof i.id!=='string'||!['text','image','mixed'].includes(i.type)))return alertToast('つくログのバックアップ形式ではありません');
+ if(!confirm('現在のテストデータを置き換えますか？必要なら先にバックアップしてください。'))return;
+ const next={products:incoming.products,items:incoming.items,types:incoming.types||db.types,statuses:incoming.statuses||db.statuses};
+ const writes=[];
+ try{
+  for(const it of next.items){const imgs=getImages(it);if(!imgs.length&&it.type==='image')throw Error('画像データがありません');it.images=imgs;for(const im of imgs)writes.push([im.id,im.data]);}
+  if(writes.length)await imageTransaction(writes);
+  const before=db;db=next;if(!persist()){db=before;render();throw Error('メタデータ保存に失敗しました')}
+  alertToast('復元しました');
+ }catch(err){alertToast('復元できませんでした。元のデータは維持しています')}
+};
+// prevent accidentally erasing image references if the current storage is inaccessible
+const v035ClearData=clearData;
+clearData=function(){if(!storageReady)return alertToast('保管庫の準備中です');v035ClearData()};
+
+/* v0.3.7: in-memory preview; never mutates stored data */
+let previewItemId=null,previewIndex=0;
+function openImagePreview(itemId,index){
+ const item=db.items.find(x=>x.id===itemId);if(!item)return;
+ const imgs=getImages(item);if(!imgs[index])return alertToast('画像が見つかりません');
+ previewItemId=itemId;previewIndex=index;refreshImagePreview();
+ $('imagePreview').classList.remove('hide');document.body.classList.add('preview-open');
+ $('imagePreview').querySelector('button').focus();
+}
+function refreshImagePreview(){
+ const item=db.items.find(x=>x.id===previewItemId);
+ const imgs=item?getImages(item):[];if(!imgs.length){closeImagePreview();return;}
+ previewIndex=Math.max(0,Math.min(previewIndex,imgs.length-1));
+ const im=imgs[previewIndex];$('previewImage').src=im.data;$('previewImage').alt=im.name;
+ $('previewName').textContent=im.name;$('previewCounter').textContent=(previewIndex+1)+' / '+imgs.length;
+ $('previewPrevious').disabled=previewIndex===0;$('previewNext').disabled=previewIndex===imgs.length-1;
+}
+function stepImagePreview(delta){previewIndex+=delta;refreshImagePreview()}
+function closeImagePreview(){
+ $('imagePreview').classList.add('hide');document.body.classList.remove('preview-open');
+ $('previewImage').removeAttribute('src');previewItemId=null;
+}
+document.addEventListener('keydown',e=>{
+ if($('imagePreview').classList.contains('hide'))return;
+ if(e.key==='Escape')closeImagePreview();
+ if(e.key==='ArrowLeft')stepImagePreview(-1);
+ if(e.key==='ArrowRight')stepImagePreview(1);
+});
+
+hydrateOrMigrate().then(()=>{gate.remove();render()}).catch(err=>{gate.textContent='画像保管庫を準備できませんでした。Safariの通常モードで開き直してください。旧データは変更していません。';gate.style.background='#fff4f2';});
+
+render();
+
+// v0.5.2 ledger-based phrase importer: additive, preview-gated, 1 text item per volume.
+const v52LedgerPhrases = [{"name":"こげもちの生意気リアクション","vol":1,"phrases":[{"num":1,"text":"ふーん"},{"num":2,"text":"へぇ〜"},{"num":3,"text":"で？"},{"num":4,"text":"なるほど"},{"num":5,"text":"りょ"},{"num":6,"text":"おっけー"},{"num":7,"text":"べつに"},{"num":8,"text":"しらん"},{"num":9,"text":"まかせろ"},{"num":10,"text":"しゃーない"},{"num":11,"text":"なんだよ"},{"num":12,"text":"おいおい"},{"num":13,"text":"まじか"},{"num":14,"text":"うそだろ"},{"num":15,"text":"はぁ？"},{"num":16,"text":"まて"},{"num":17,"text":"それな"},{"num":18,"text":"ないわ〜"},{"num":19,"text":"やるな"},{"num":20,"text":"おつかれ"},{"num":21,"text":"サンキュ"},{"num":22,"text":"どやっ"},{"num":23,"text":"いける！"},{"num":24,"text":"勝ったな"},{"num":25,"text":"へへっ"},{"num":26,"text":"ばれた？"},{"num":27,"text":"ひみつ"},{"num":28,"text":"ざんねん"},{"num":29,"text":"もっかい"},{"num":30,"text":"たのむ！"},{"num":31,"text":"めんどい"},{"num":32,"text":"やだね"},{"num":33,"text":"あとでな"},{"num":34,"text":"ねむ…"},{"num":35,"text":"腹へった"},{"num":36,"text":"離席"},{"num":37,"text":"大丈夫"},{"num":38,"text":"いいぜ"},{"num":39,"text":"またな"},{"num":40,"text":"よろしく"}]},{"name":"こげもちのサボり生活","vol":2,"phrases":[{"num":1,"text":"あと5分…"},{"num":2,"text":"二度寝確定"},{"num":3,"text":"布団が勝った"},{"num":4,"text":"起動失敗"},{"num":5,"text":"朝から限界"},{"num":6,"text":"目覚まし無視"},{"num":7,"text":"寝ぐせ爆発"},{"num":8,"text":"低速モード"},{"num":9,"text":"準備してない"},{"num":10,"text":"遅刻しそう"},{"num":11,"text":"締切まだだし"},{"num":12,"text":"明日の自分に託す"},{"num":13,"text":"本日休業"},{"num":14,"text":"現実逃避中"},{"num":15,"text":"見なかったことに"},{"num":16,"text":"充電切れ"},{"num":17,"text":"予定は未定"},{"num":18,"text":"思考停止"},{"num":19,"text":"片づけ断念"},{"num":20,"text":"何も進んでない"},{"num":21,"text":"ゴロゴロ最高"},{"num":22,"text":"ソファ占領中"},{"num":23,"text":"ポテチが止まらん"},{"num":24,"text":"動画あと1本"},{"num":25,"text":"リモコンどこ？"},{"num":26,"text":"お昼寝タイム"},{"num":27,"text":"今日は省エネ"},{"num":28,"text":"動いたら負け"},{"num":29,"text":"あとでやる"},{"num":30,"text":"休憩延長"},{"num":31,"text":"寝落ちした"},{"num":32,"text":"明日から本気"},{"num":33,"text":"通知オフ"},{"num":34,"text":"外出やめた"},{"num":35,"text":"お風呂めんどい"},{"num":36,"text":"洗い物は明日"},{"num":37,"text":"洗濯物の山"},{"num":38,"text":"宅配ありがと"},{"num":39,"text":"やる気は迷子"},{"num":40,"text":"サボりの天才"}]},{"name":"こげもちのおでかけ連絡","vol":3,"phrases":[{"num":1,"text":"何時集合？"},{"num":2,"text":"どこ集合？"},{"num":3,"text":"車で行く"},{"num":4,"text":"そろそろ出る"},{"num":5,"text":"忘れ物！"},{"num":6,"text":"戸締まりよし"},{"num":7,"text":"いってくる"},{"num":8,"text":"向かってる"},{"num":9,"text":"歩いてる"},{"num":10,"text":"電車待ち"},{"num":11,"text":"電車乗った"},{"num":12,"text":"乗り換え中"},{"num":13,"text":"道まちがえた"},{"num":14,"text":"迎え頼む"},{"num":15,"text":"電車遅れてる"},{"num":16,"text":"ここで合流"},{"num":17,"text":"あと10分"},{"num":18,"text":"着いたぞ"},{"num":19,"text":"駅にいる"},{"num":20,"text":"入口にいる"},{"num":21,"text":"どこにいる？"},{"num":22,"text":"見つけた！"},{"num":23,"text":"こっちだぞ"},{"num":24,"text":"待ってるぞ"},{"num":25,"text":"まだ来ない？"},{"num":26,"text":"先に入ってて"},{"num":27,"text":"席とっとく"},{"num":28,"text":"行列だ…"},{"num":29,"text":"混んでる"},{"num":30,"text":"予約してある"},{"num":31,"text":"別の店いこ"},{"num":32,"text":"寄り道中"},{"num":33,"text":"飲み物買う"},{"num":34,"text":"荷物多すぎ"},{"num":35,"text":"雨降ってきた"},{"num":36,"text":"傘あるぞ"},{"num":37,"text":"そろそろ帰る"},{"num":38,"text":"帰り道"},{"num":39,"text":"帰宅！"},{"num":40,"text":"気をつけてな"}]},{"name":"こげもちの裏の顔","vol":4,"phrases":[{"num":1,"text":"そうですね〜"},{"num":2,"text":"（また始まった）"},{"num":3,"text":"いいと思う"},{"num":4,"text":"（圧がすごい）"},{"num":5,"text":"おまかせします"},{"num":6,"text":"（ムリだろ）"},{"num":7,"text":"いま心読んだ？"},{"num":8,"text":"（覚えてろよ）"},{"num":9,"text":"それはそれで"},{"num":10,"text":"（どうでもいい）"},{"num":11,"text":"計画どおり"},{"num":12,"text":"いいこと思いついた"},{"num":13,"text":"罠だったのさ"},{"num":14,"text":"裏で仕込み中"},{"num":15,"text":"次の一手"},{"num":16,"text":"こっそり作戦"},{"num":17,"text":"こいつは使える"},{"num":18,"text":"裏では順調"},{"num":19,"text":"計算外だ！"},{"num":20,"text":"見えてるぞ"},{"num":21,"text":"（実はうれしい）"},{"num":22,"text":"（くやしい！）"},{"num":23,"text":"（いいなぁ）"},{"num":24,"text":"（照れる…）"},{"num":25,"text":"（期待してた）"},{"num":26,"text":"（ドキドキ）"},{"num":27,"text":"（気になる）"},{"num":28,"text":"（調子のるな）"},{"num":29,"text":"（こわっ）"},{"num":30,"text":"（顔がゆるむ）"},{"num":31,"text":"知ってたし"},{"num":32,"text":"（認めてる）"},{"num":33,"text":"そこでそれ!?"},{"num":34,"text":"顔に出てた？"},{"num":35,"text":"図星かも…"},{"num":36,"text":"平気なフリ"},{"num":37,"text":"余裕だし！"},{"num":38,"text":"わざとだし！"},{"num":39,"text":"心の中で拍手"},{"num":40,"text":"本当はありがとな"}]},{"name":"こげもちの食いしん坊","vol":5,"phrases":[{"num":1,"text":"飯いこ！"},{"num":2,"text":"胃袋が騒ぐ！"},{"num":3,"text":"何食べる？"},{"num":4,"text":"飯まだ？"},{"num":5,"text":"おごりだよな？"},{"num":6,"text":"ひとくちくれ"},{"num":7,"text":"これ食べたい！"},{"num":8,"text":"いただきます！"},{"num":9,"text":"ごちそうさま！"},{"num":10,"text":"おかわり！"},{"num":11,"text":"それ俺の！"},{"num":12,"text":"絶対やらん"},{"num":13,"text":"まだ食える"},{"num":14,"text":"つまみ食い中"},{"num":15,"text":"口に証拠が！"},{"num":16,"text":"肉がいい！"},{"num":17,"text":"甘いの別腹"},{"num":18,"text":"野菜はあとで"},{"num":19,"text":"大盛り希望！"},{"num":20,"text":"食べ放題だ！"},{"num":21,"text":"うまっ！！"},{"num":22,"text":"神の味！"},{"num":23,"text":"しあわせ〜"},{"num":24,"text":"あっつ！！"},{"num":25,"text":"からっ！！"},{"num":26,"text":"すっぱ！！"},{"num":27,"text":"先に味見する！"},{"num":28,"text":"もぐもぐ"},{"num":29,"text":"こぼした…"},{"num":30,"text":"最後の一個！"},{"num":31,"text":"腹パンパン"},{"num":32,"text":"ギブアップ…"},{"num":33,"text":"食後の反省会"},{"num":34,"text":"お会計よろしく"},{"num":35,"text":"おやつの時間！"},{"num":36,"text":"デザートまだ？"},{"num":37,"text":"夜食は正義！"},{"num":38,"text":"おいしい予感！"},{"num":39,"text":"うまいもん最高！"},{"num":40,"text":"明日から節制！"}]},{"name":"こげもちの毒舌ツッコミ","vol":6,"phrases":[{"num":1,"text":"なんでやねん！"},{"num":2,"text":"そこじゃない！"},{"num":3,"text":"話が違う！"},{"num":4,"text":"どうしてそうなる"},{"num":5,"text":"ツッコませるな！"},{"num":6,"text":"待て、展開早い！"},{"num":7,"text":"誰が言うとんねん"},{"num":8,"text":"結論おかしいぞ！"},{"num":9,"text":"何を見せられてる？"},{"num":10,"text":"主語どこいった？"},{"num":11,"text":"雑すぎん？"},{"num":12,"text":"自信だけ一人前"},{"num":13,"text":"勢いだけか！"},{"num":14,"text":"どんな理屈だよ"},{"num":15,"text":"そこ間違える？"},{"num":16,"text":"話が飛びすぎ！"},{"num":17,"text":"その自信どこから？"},{"num":18,"text":"誰目線なの？"},{"num":19,"text":"説得力ゼロ！"},{"num":20,"text":"堂々と間違えた！"},{"num":21,"text":"急に偉そう！"},{"num":22,"text":"話盛ってない？"},{"num":23,"text":"どの口が言う！"},{"num":24,"text":"根拠はどこだ！"},{"num":25,"text":"クセ強すぎ！"},{"num":26,"text":"ボケ渋滞中！"},{"num":27,"text":"情報量多すぎ！"},{"num":28,"text":"主役のつもり？"},{"num":29,"text":"オチはどこ？"},{"num":30,"text":"何の大会だよ！"},{"num":31,"text":"急展開すぎる！"},{"num":32,"text":"拍手するとこ？"},{"num":33,"text":"その顔やめろ！"},{"num":34,"text":"発想が斜め上！"},{"num":35,"text":"例えが独特！"},{"num":36,"text":"逆にすごいわ"},{"num":37,"text":"才能のムダづかい"},{"num":38,"text":"嫌いじゃないぞ"},{"num":39,"text":"ボケが止まらん！"},{"num":40,"text":"ツッコミ疲れたわ！"}]},{"name":"こげもちのお仕事モード","vol":7,"phrases":[{"num":1,"text":"業務開始！"},{"num":2,"text":"出勤したぞ"},{"num":3,"text":"今日の予定は？"},{"num":4,"text":"メール確認中"},{"num":5,"text":"朝から会議！"},{"num":6,"text":"本日の任務"},{"num":7,"text":"仕事モードON"},{"num":8,"text":"優先順位つける"},{"num":9,"text":"作業に入る！"},{"num":10,"text":"ただいま対応中"},{"num":11,"text":"半分終わった！"},{"num":12,"text":"確認お願いします"},{"num":13,"text":"修正します！"},{"num":14,"text":"あと少し！"},{"num":15,"text":"チェック完了"},{"num":16,"text":"提出したぞ！"},{"num":17,"text":"打ち合わせ中"},{"num":18,"text":"資料送ります"},{"num":19,"text":"共有しとく！"},{"num":20,"text":"相談がある"},{"num":21,"text":"ここ教えて！"},{"num":22,"text":"承認待ちです"},{"num":23,"text":"返信しました"},{"num":24,"text":"引き継ぎ頼む！"},{"num":25,"text":"案件が増えた…"},{"num":26,"text":"急ぎ案件きた！"},{"num":27,"text":"データ消えた!?"},{"num":28,"text":"原因を調査中"},{"num":29,"text":"緊急対応！"},{"num":30,"text":"やり直しかよ…"},{"num":31,"text":"仕様が変わった!?"},{"num":32,"text":"応援求む！"},{"num":33,"text":"問題解決！"},{"num":34,"text":"納品完了！"},{"num":35,"text":"ミッション成功"},{"num":36,"text":"定時で帰るぞ"},{"num":37,"text":"残業確定…"},{"num":38,"text":"今日も働いた！"},{"num":39,"text":"俺の成果を見ろ！"},{"num":40,"text":"明日も頼むぜ！"}]},{"name":"こげもちの友達トーク","vol":8,"phrases":[{"num":1,"text":"今日ヒマ？"},{"num":2,"text":"遊んでやるよ"},{"num":3,"text":"今週どっか行く？"},{"num":4,"text":"誰か呼ぶ？"},{"num":5,"text":"行き先決めよ"},{"num":6,"text":"何して遊ぶ？"},{"num":7,"text":"オンラインでもいい？"},{"num":8,"text":"人数足りてる？"},{"num":9,"text":"仲間に入れろ！"},{"num":10,"text":"楽しみにしとけよ"},{"num":11,"text":"何持ってく？"},{"num":12,"text":"今回はパス！"},{"num":13,"text":"次こそ行くぞ"},{"num":14,"text":"誘って正解だろ？"},{"num":15,"text":"次はそっちが決めて"},{"num":16,"text":"最近どうよ？"},{"num":17,"text":"続報待ってる！"},{"num":18,"text":"相談乗るぜ？"},{"num":19,"text":"それいつの話？"},{"num":20,"text":"笑わせにきたな？"},{"num":21,"text":"写真見せて！"},{"num":22,"text":"意外な一面だな"},{"num":23,"text":"多数決で！"},{"num":24,"text":"それ誰の話？"},{"num":25,"text":"それ採用！"},{"num":26,"text":"初耳なんだが！"},{"num":27,"text":"俺にも話させろ！"},{"num":28,"text":"通話できる？"},{"num":29,"text":"スクショ送って！"},{"num":30,"text":"また語ろうぜ"},{"num":31,"text":"負けたら罰ゲーム！"},{"num":32,"text":"かかってこい！"},{"num":33,"text":"ハンデいるか？"},{"num":34,"text":"次は俺の番！"},{"num":35,"text":"いい勝負だな！"},{"num":36,"text":"反則だろ！"},{"num":37,"text":"結果発表〜！"},{"num":38,"text":"リベンジ希望！"},{"num":39,"text":"楽しかったぜ"},{"num":40,"text":"また遊ぼうな"}]},{"name":"こげもちの気まぐれトーク","vol":9,"phrases":[{"num":1,"text":"努力が伝わったぞ"},{"num":2,"text":"その調子だ！"},{"num":3,"text":"味方はここにいる"},{"num":4,"text":"慌てんなって"},{"num":5,"text":"踏ん張りどころ！"},{"num":6,"text":"本領発揮だな"},{"num":7,"text":"まだ伸びるな！"},{"num":8,"text":"肩の力抜けよ"},{"num":9,"text":"まずは一歩だ！"},{"num":10,"text":"今日は褒めてやる"},{"num":11,"text":"テンション急上昇！"},{"num":12,"text":"最高すぎる！！"},{"num":13,"text":"二度見したぞ！"},{"num":14,"text":"興奮してきた！"},{"num":15,"text":"負けず嫌い発動！"},{"num":16,"text":"思わず叫んだ！"},{"num":17,"text":"鳥肌たった！"},{"num":18,"text":"胸が熱くなる…"},{"num":19,"text":"感情が追いつかん"},{"num":20,"text":"ツボに入った！"},{"num":21,"text":"頭が真っ白！"},{"num":22,"text":"思わず小躍り！"},{"num":23,"text":"まだ起きてる？"},{"num":24,"text":"夜はこれから！"},{"num":25,"text":"眠気消えた！"},{"num":26,"text":"時計見てびっくり"},{"num":27,"text":"そろそろ寝るか"},{"num":28,"text":"いい夢見ろよ"},{"num":29,"text":"妙に静かだな…"},{"num":30,"text":"何もしてないぞ？"},{"num":31,"text":"偶然の大当たり！"},{"num":32,"text":"ひっかけ問題か！"},{"num":33,"text":"見せ場きた！"},{"num":34,"text":"調子に乗りすぎた"},{"num":35,"text":"話を戻そう"},{"num":36,"text":"視線を感じる…"},{"num":37,"text":"さては狙ってたな？"},{"num":38,"text":"空気変わったな…"},{"num":39,"text":"聞き間違いか？"},{"num":40,"text":"冗談だってば！"}]},{"name":"こげもちの甘くない優しさ","vol":10,"phrases":[{"num":1,"text":"無理すんなよ"},{"num":2,"text":"休むのも仕事だろ"},{"num":3,"text":"ちゃんと食っとけ"},{"num":4,"text":"目の下クマできてるぞ"},{"num":5,"text":"足元、滑るぞ"},{"num":6,"text":"水分とれよ"},{"num":7,"text":"画面から目ぇ離せ"},{"num":8,"text":"冷えるぞ、それ"},{"num":9,"text":"今日は早く帰れ"},{"num":10,"text":"一人で抱えんな"},{"num":11,"text":"よく耐えたな"},{"num":12,"text":"続きは明日でいい"},{"num":13,"text":"昨日よりマシじゃん"},{"num":14,"text":"急がなくていいだろ"},{"num":15,"text":"ミスった分だけ覚えたろ"},{"num":16,"text":"悔しいなら次だな"},{"num":17,"text":"全部お前のせいじゃねぇ"},{"num":18,"text":"見えないとこで頑張ってたな"},{"num":19,"text":"お前のペースでいけ"},{"num":20,"text":"まだ巻き返せるだろ"},{"num":21,"text":"ったく、貸せよ"},{"num":22,"text":"重い方よこせ"},{"num":23,"text":"予備ならあるぞ"},{"num":24,"text":"ほら、手ぇ出せ"},{"num":25,"text":"そこは俺がやる"},{"num":26,"text":"先に座っとけ"},{"num":27,"text":"ややこしいの整理しとく"},{"num":28,"text":"終わるまで付き合う"},{"num":29,"text":"面倒な話は俺がする"},{"num":30,"text":"貸し一つな"},{"num":31,"text":"たまたま気になっただけ"},{"num":32,"text":"余ったからやる"},{"num":33,"text":"お前の分、取っといた"},{"num":34,"text":"泣き顔は見ないでやる"},{"num":35,"text":"黙って聞いてやるよ"},{"num":36,"text":"今日だけ特別な"},{"num":37,"text":"頑張りすぎ、バレてるぞ"},{"num":38,"text":"静かすぎると落ち着かねぇ"},{"num":39,"text":"いないと面倒なんだよ"},{"num":40,"text":"無事ならそれでいい"}]},{"name":"こげもちのデカ文字リアクション","vol":11,"phrases":[{"num":1,"text":"激アツ！"},{"num":2,"text":"大歓喜！"},{"num":3,"text":"拍手！"},{"num":4,"text":"優勝！"},{"num":5,"text":"話変わる！"},{"num":6,"text":"お見事！"},{"num":7,"text":"尊敬！"},{"num":8,"text":"センスある！"},{"num":9,"text":"それ好き"},{"num":10,"text":"アリだな"},{"num":11,"text":"期待大！"},{"num":12,"text":"突破！"},{"num":13,"text":"ぎゃー！"},{"num":14,"text":"衝撃！"},{"num":15,"text":"鳥肌！"},{"num":16,"text":"予想外！"},{"num":17,"text":"えぐっ！"},{"num":18,"text":"まさかの！"},{"num":19,"text":"何事!?"},{"num":20,"text":"なぜだ！"},{"num":21,"text":"どゆこと？"},{"num":22,"text":"謎すぎ"},{"num":23,"text":"怪しいぞ"},{"num":24,"text":"本当か？"},{"num":25,"text":"ストップ！"},{"num":26,"text":"聞いて！"},{"num":27,"text":"見て見て"},{"num":28,"text":"集合！"},{"num":29,"text":"内緒な"},{"num":30,"text":"ここ大事"},{"num":31,"text":"違うって"},{"num":32,"text":"静かに！"},{"num":33,"text":"却下！"},{"num":34,"text":"やめとけ"},{"num":35,"text":"無理ゲー"},{"num":36,"text":"ピーン！"},{"num":37,"text":"異議あり！"},{"num":38,"text":"助かった！"},{"num":39,"text":"感激！"},{"num":40,"text":"盛り上がれ！"}]}];
+let v52PhrasePlan=null;
+const v52PhraseResourceName='正式40フレーズ｜マスター台帳v2.1';
+function v52PhraseToggle(){
+ document.getElementById('v52PhraseRun').disabled=!(v52PhrasePlan&&document.getElementById('v52PhraseAgree').checked&&storageReady);
+}
+function v52PhrasePreview(){
+ const output=document.getElementById('v52PhraseResult');
+ v52PhrasePlan=null;document.getElementById('v52PhraseAgree').checked=false;
+ const add=[],skip=[],missing=[],ambiguous=[];
+ for(const r of v52LedgerPhrases){
+  const matches=db.products.filter(p=>v52Key(p)===v52Key({name:r.name,type:'LINE絵文字'}));
+  if(matches.length===0){missing.push(r);continue}
+  if(matches.length!==1){ambiguous.push(r);continue}
+  const product=matches[0];
+  if(db.items.some(i=>i.product===product.id&&i.name===v52PhraseResourceName)){skip.push(r);continue}
+  add.push({record:r,productId:product.id});
+ }
+ if(ambiguous.length){output.textContent='同名の商品が複数見つかりました。取り込みできません：'+ambiguous.map(x=>x.name).join('、');v52PhraseToggle();return}
+ v52PhrasePlan={add,skip,missing};
+ output.textContent=`台帳で確認済み：11弾・440フレーズ\n今回追加する資料：${add.length}件（${add.length*40}フレーズ）\n登録済みの同名資料：${skip.length}件（スキップ）\n対応する作品フォルダなし：${missing.length}件（スキップ）\n\n追加先：\n${add.map(x=>'・第'+x.record.vol+'弾 '+x.record.name+'：40フレーズ').join('\n')||'なし'}${missing.length?'\n\n未登録作品：'+missing.map(x=>x.name).join('、'):''}\n\n第12弾「冬じたく」は対象外。画像・ZIPは追加しません。`;v52PhraseToggle();
+}
+function v52PhraseCommit(){
+ const plan=v52PhrasePlan;
+ if(!plan||!document.getElementById('v52PhraseAgree').checked||!storageReady)return alertToast('確認とバックアップが必要です');
+ if(!plan.add.length)return alertToast('新しい資料はありません');
+ // Re-evaluate all targets immediately before writing; abort if any changed.
+ for(const x of plan.add){
+  const matching=db.products.filter(p=>v52Key(p)===v52Key({name:x.record.name,type:'LINE絵文字'}));
+  if(matching.length!==1||matching[0].id!==x.productId||db.items.some(i=>i.product===x.productId&&i.name===v52PhraseResourceName)){
+   v52PhrasePlan=null;v52PhraseToggle();return alertToast('登録内容が変わりました。もう一度確認してください');
+  }
+ }
+ if(!confirm(`正式フレーズ資料 ${plan.add.length}件（${plan.add.length*40}フレーズ）を追加します。\n既存資料は変更しません。続けますか？`))return;
+ const snapshot=JSON.stringify(db);
+ try{
+  const now=new Date().toISOString();
+  for(const {record,productId} of plan.add){
+   const value=`【こげもち第${record.vol}弾｜${record.name}】\n正式40フレーズ（マスター台帳v2.1）\n\n`+record.phrases.map(x=>String(x.num).padStart(3,'0')+' '+x.text).join('\n')+'\n\n※原文は台帳v2.1の正式確定欄から転記。画像・ZIPは未登録。';
+   db.items.push({id:id(),name:v52PhraseResourceName,type:'text',value,imageData:'',product:productId,locked:true,created:now});
+  }
+  if(!persist())throw Error('保存に失敗しました');
+  document.getElementById('v52PhraseAgree').checked=false;
+  document.getElementById('v52PhraseResult').textContent=`資料 ${plan.add.length}件（${plan.add.length*40}フレーズ）を追加しました。ホームから作品フォルダを確認してください。`;
+  v52PhrasePlan=null;v52PhraseToggle();alertToast('正式フレーズ資料を追加しました');
+ }catch(e){db=JSON.parse(snapshot);render();alertToast('追加できませんでした。元のデータを保持しました')}
+}
+
+
+// Safe explicit original-prompt import. Never labels an unverified historical draft as final.
+let v52PromptPlan=null;
+function v52PromptFill(){
+ const sel=document.getElementById('v52PromptProduct');if(!sel)return;
+ const previous=sel.value;
+ const products=[...db.products].sort((a,b)=>a.name.localeCompare(b.name,'ja'));
+ sel.innerHTML='<option value="">作品を選択してください</option>'+products.map(p=>'<option value="'+esc(p.id)+'">'+esc(p.name)+'</option>').join('');
+ if(products.some(p=>p.id===previous))sel.value=previous;
+}
+function v52PromptToggle(){document.getElementById('v52PromptRun').disabled=!(v52PromptPlan&&document.getElementById('v52PromptAgree').checked&&storageReady)}
+function v52PromptReset(){v52PromptPlan=null;document.getElementById('v52PromptAgree').checked=false;document.getElementById('v52PromptResult').textContent='内容が変更されました。もう一度「保存内容を確認」を押してください。';v52PromptToggle()}
+async function v52PromptReadFile(el){
+ const f=el.files&&el.files[0];if(!f)return;
+ if(!/\.(txt|md)$/i.test(f.name)||f.size>250000){alertToast('txt/md・250KB以下のファイルを選んでください');return}
+ try{document.getElementById('v52PromptText').value=await f.text();v52PromptReset();alertToast('原文を読み込みました')}catch(e){alertToast('テキストを読み込めませんでした')}
+}
+function v52PromptPreview(){
+ v52PromptReset();v52PromptFill();
+ const pid=document.getElementById('v52PromptProduct').value;
+ const name=document.getElementById('v52PromptName').value.trim();
+ const value=document.getElementById('v52PromptText').value;
+ const matches=db.products.filter(p=>p.id===pid);
+ const out=document.getElementById('v52PromptResult');
+ if(matches.length!==1||!name||!value.trim()){out.textContent='保存先・管理名・原文全文を入力してください。';return}
+ if(value.length>120000){out.textContent='原文が長すぎます。120,000文字以下で取り込んでください。';return}
+ if(db.items.some(i=>i.product===pid&&i.name===name)){out.textContent='同名資料が登録済みです。既存資料を守るため追加しません。';return}
+ v52PromptPlan={pid,name,value};
+ out.textContent='追加先：'+matches[0].name+'\n資料名：'+name+'\n原文：'+value.length+'文字\n冒頭：'+value.slice(0,220)+(value.length>220?'…':'')+'\n\n※全文をそのまま保存・保護します。歴史的な最終版かどうかは利用者が確認してください。';
+ v52PromptToggle();
+}
+function v52PromptCommit(){
+ const plan=v52PromptPlan;
+ if(!plan||!document.getElementById('v52PromptAgree').checked||!storageReady)return alertToast('プレビューとバックアップ確認が必要です');
+ if(db.products.filter(p=>p.id===plan.pid).length!==1||db.items.some(i=>i.product===plan.pid&&i.name===plan.name)){
+   v52PromptReset();return alertToast('保存先・資料が変更されました。もう一度確認してください')
+ }
+ if(!confirm('「'+plan.name+'」の原文'+plan.value.length+'文字を保存します。既存資料は変更しません。続けますか？'))return;
+ const snapshot=JSON.stringify(db);
+ try{
+  db.items.push({id:id(),name:plan.name,type:'text',value:plan.value,imageData:'',product:plan.pid,locked:true,created:new Date().toISOString()});
+  if(!persist())throw Error('save failed');
+  document.getElementById('v52PromptResult').textContent='原文を作品へ保存しました。作品フォルダで確認してください。';
+  document.getElementById('v52PromptText').value='';document.getElementById('v52PromptAgree').checked=false;v52PromptPlan=null;v52PromptToggle();alertToast('制作プロンプトを保存しました');
+ }catch(e){db=JSON.parse(snapshot);render();alertToast('保存失敗。バックアップを保持してください')}
+}
+document.addEventListener('DOMContentLoaded',()=>{const original=v5Settings;v5Settings=function(){original();v52PromptFill()}});
+
+// Batch import of *unverified* reference versions, never automatic assertion of finality.
+const v52BatchSources=[{"vol": 3, "product": "こげもちのおでかけ連絡", "version": "Ver.1.0", "value": "# 🐻 こげもち LINE絵文字 第3弾\n# Work用・完全統合制作マスタープロンプト Ver.1.0\n【MofuMofu Studio｜正式制作指示書】\n確定日：2026-10-11（日本時間）\n最新のユーザー依頼「お願い！」を、直前に提示したタイトル・統合40案によるWork指示書作成の承認として反映。\nこのファイルは第3弾の指示書。Ver.1.0は第3弾内の版番号であり、プロジェクト共通指示や過去弾のマスターを置き換えない。\n前の構図設計Ver.1.0にある「正式確定前」という状態は、この指示書で更新する。正式フレーズとタイトルは以下を優先する。\n\n## 1. 制作案件\nキャラクター：こげもち\n弾数：第3弾\n正式タイトル：こげもちのおでかけ連絡\n正式テーマ：おでかけ連絡\nコンセプト：出かけるのは少し面倒。でも出たらマイペースでちょっと生意気。出発・移動・合流・外出先・帰宅に使える実用連絡絵文字。\n制作方式：予約実行なし。1キャラクター・1弾・1Work専用チャットで直接制作。\n完成ZIP名：Kogemochi_Vol3_FINAL.zip\nChat企画名：🐻こげもち｜第3弾｜おでかけ連絡｜Chat\nWork制作名：🔴制作部隊｜こげもち｜第3弾｜おでかけ連絡｜Work\n制作開始時、正式Work名を独立したコピー用ブロックで提示。実際にチャット名を変更していなければ変更済みと報告しない。\n\n## 2. 最終目的と制作範囲\n販売品質の静止画LINE絵文字001.png〜040.pngとtab.pngを制作し、全数検品、不合格修正、ZIP実展開検証、LINE登録情報、特集調査結果を納品する。\n登録画面の操作・審査申請・販売開始は、この指示書だけでは実行しない。別途ユーザーから依頼された範囲で実行し、結果を確認して報告する。\n制作の二重実行を防ぐ。既に同一案件の完成画像が存在する場合は取得・検品し、合格済みを理由なく作り直さない。\n\n## 3. 正式基準画像・キャラクター\n制作依頼でユーザーが直接添付する最新の正式基準画像を絶対優先する。\n顔・毛並み用と全身用の2枚が添付される場合、それぞれの役割に従う。\n必須の正式基準画像が添付されていなければ、生成前に添付を依頼する。過去納品PNGや一覧を正式基準の代わりにしない。\n黒〜チャコールグレーのモコモコ体、白い丸目・小黒瞳と鼻、白いM字口元、淡ピンク頬を基準どおりに維持。\nクール×お調子者、ちょっと生意気、いたずら好き。甘えん坊・過度なかわいこぶり・威圧的攻撃表現は禁止。\n靴は全40枚とtabで禁止。裸足の形は正式基準どおり。過去の画像に靴があっても引き継がない。\n基準にない腹部の色、体型、目の比率、口元、毛並みを過去作から追加しない。\nもふまる・スライミーとの混同は禁止。\n\n## 4. 画像仕様\n2026-10-11に静止画絵文字のLINE公式ガイドラインとファイル名一覧を確認。\n001.png〜040.png：180×180px、PNG、RGBベース＋透明alpha、72dpi以上、各1MB以下。\ntab.png：96×74px、PNG、RGBベース＋透明alpha、72dpi以上、1MB以下。\n完成ZIP：20MB以下。静止画として制作し、APNG仕様と混同しない。\n公式：\nhttps://creator.line.me/ja/guideline/emoji/\nhttps://creator.line.me/ja/guideline/emoji/detail/\n制作開始時に公式仕様を再確認し、変更があれば根拠と差分を報告する。40フレーズ・キャラ設定の無断変更は禁止。\n公式は画像を大きく使うことを推奨する。下記の余白はスタジオの切れ防止設計であり、公式の必須8px規定ではない。\n\n## 5. 共通配置・文字\n事前設計：文字領域x10〜170/y8〜50、キャラ・小物領域x12〜168/y56〜170、四辺8px以上透明余白を目安とする。\n正式基準への忠実さ、読みやすさ、顔の大きさを優先し、先行4枚で最終配置・フォント・文字サイズ・フチ幅を決める。読みにくい場合は領域の分配を調整するが、キャラ造形やフレーズは変えない。\n文字は黒系の太く読みやすい日本語＋白フチを基本とし、暗い背景・明るい背景で検品。正式基準や最新ユーザー指示に文字色・形の指定があればそちらを優先。\nフレーズの字句、数字、句読点、疑問符、感嘆符、「…」をそのまま維持する。誤字・脱字・別の文字への置換は不合格。\n下記の1行/2行は配置指示。改行だけは視認性に応じ調整可。\n文字後入れは品質と統一感に適する場合に使用可。商用利用できるフォントを選び、輪郭と文字の重なりを確認する。\n小物内の追加文字・実在ブランド・実在アプリUI・ロゴ・透かし・番号の描き込みは禁止。\n小物と背景は必要部分だけを示し、透明背景に大きな風景・パネルを置かない。\n人物シルエットは背景補助に限る。別のこげもち・別キャラとして目立たせない。\n移動や方向転換でも手足の本数・関節・持ち方を整合させる。\n\n## 6. 過去2弾の重複照合\n第1弾「こげもちの生意気リアクション」Kogemochi_Vol1_Cheeky_Reactions.zip、\n第2弾「こげもちのサボり生活」Kogemochi_Vol2_FINAL(1).zipを実展開し、納品PNG計80枚の文字・意味・用途・構図・小物を確認済み。\n第1弾Kogemochi_Vol1_QA.md全文も確認済み。\n第2弾は候補記録と完成PNGに違いがあり、今回は納品PNGの表示内容を比較基準とした。第2弾の正式指示書との一致確認は未実施で、過去の正式条件を変更したとは扱わない。\n第3弾当初案と過去80枚の文字完全一致なし。ただし近い意味・用途・演出を避けるため、以下6件を統合して今回の正式40に反映済み。\n003 支度中→車で行く\n014 迷子だ…→迎え頼む\n015 遅れそう→電車遅れてる\n016 先に行ってて→ここで合流\n030 店お休み→予約してある\n033 ちょい休憩→飲み物買う\n上記変更前のフレーズへ戻さない。\n\n007は第1弾036「離席」の後ろ姿を避け、斜め正面の出発姿にする。\n024は第1弾016「まて」の制止姿を避け、屋外ベンチで相手を待つ姿にする。\n034は第2弾009「準備してない」の開いたバッグを避け、左右の買い物袋にする。\n040は第1弾020「おつかれ」・039「またな」の手振りを避け、足元段差を指す注意喚起にする。\n表情の基本形の共通性まで完全に消す必要はない。意味・用途・構図・小物・演出が組み合わさって過去作の実質的再作になることを防ぐ。\n本弾内の似た場面は目的と主動作で分ける。移動予告・移動中・到着、電車待ち・人待ち、行列・混雑、席確保・予約済みを区別する。\n今回の完成画像はまだないため、完成画像同士の最終構図照合は制作後に実施する。照合資料が取得できない場合は未確認範囲を報告し、「過去照合完全合格」と書かない。\n\n## 7. 正式40フレーズと詳細構図\n次の001〜040を正式固定する。勝手な追加・削除・入れ替え・番号変更は禁止。\n\n001「何時集合？」\n表情：片目を細める。\nポーズ・構図：丸い時計を指し、相手へ時刻を尋ねる。\n小物：時計。\n文字配置：上1行。\n\n002「どこ集合？」\n表情：首を軽くかしげる。\nポーズ・構図：地図の上に手をかざし、場所を尋ねる。\n小物：簡略地図・位置ピン1個。\n文字配置：上1行。\n\n003「車で行く」\n表情：余裕のニヤリ。\nポーズ・構図：車の窓から顔を見せ、片手でハンドルを握る。\n小物：車の窓・ハンドルの抜粋。\n文字配置：上1行。\n\n004「そろそろ出る」\n表情：気だるい横目。\nポーズ・構図：バッグを肩に掛け直し、体を斜め前へ向ける。\n小物：肩掛けバッグ。\n文字配置：上1行。\n\n005「忘れ物！」\n表情：目を見開く。\nポーズ・構図：空のポケットを探り、足を止める。\n小物：空のポケットを示す短い動線。\n文字配置：上1行。\n\n006「戸締まりよし」\n表情：得意げな細目。\nポーズ・構図：鍵を回してから確認する。\n小物：鍵・ドアの鍵穴部分。\n文字配置：上2行：戸締まり／よし。\n\n007「いってくる」\n表情：クールな目。\nポーズ・構図：顔の見える斜め正面から、小さく踏み出す。\n小物：小さな斜め掛けバッグ。\n文字配置：上1行。\n\n008「向かってる」\n表情：前を見据える。\nポーズ・構図：横向きに歩きながら、スマホで連絡する。\n小物：スマホ・短い移動線。\n文字配置：上1行。\n\n009「歩いてる」\n表情：落ち着いた目。\nポーズ・構図：横姿で両腕を自然に振り、大きめの一歩。\n小物：足元の短い道線。\n文字配置：上1行。\n\n010「電車待ち」\n表情：少し退屈な目。\nポーズ・構図：ホームのベンチに腰掛け、線路側を見る。\n小物：ベンチ端・ホーム端の短い線。\n文字配置：上1行。\n\n011「電車乗った」\n表情：平静。\nポーズ・構図：車内のつり革を片手で持つ。\n小物：つり革・車窓の抜粋。\n文字配置：上2行：電車／乗った。\n\n012「乗り換え中」\n表情：真剣な目。\nポーズ・構図：通路の案内矢印を見上げ、進む方向を確認する。\n小物：案内矢印1個・簡略階段。\n文字配置：上1行。\n\n013「道まちがえた」\n表情：気まずい横目。\nポーズ・構図：進行方向からくるりと向きを変える。\n小物：Uターン動線。\n文字配置：上2行：道／まちがえた。\n\n014「迎え頼む」\n表情：少し困るが強がる目。\nポーズ・構図：スマホを耳に当て、現在地を伝える。\n小物：スマホ・足元の位置ピン。\n文字配置：上1行。\n\n015「電車遅れてる」\n表情：不満なジト目。\nポーズ・構図：両手を腰に置き、止まった電車を横目で見る。\n小物：小さな電車前面・停止を示す短い線。\n文字配置：上2行：電車／遅れてる。\n\n016「ここで合流」\n表情：自信のある目。\nポーズ・構図：地図上の一点を指先で示す。\n小物：地図の局所・合流矢印。\n文字配置：上1行。\n\n017「あと10分」\n表情：急ぎ気味の目。\nポーズ・構図：小さな時計を胸の横へ掲げて見せる。\n小物：小時計・汗1粒。\n文字配置：上1行。\n\n018「着いたぞ」\n表情：安堵したニヤリ。\nポーズ・構図：バッグを足元に置いて立ち、肩の力を抜く。\n小物：閉じたバッグ・到着の短い強調線。\n文字配置：上1行。\n\n019「駅にいる」\n表情：平静。\nポーズ・構図：駅の改札脇でこちらを向く。\n小物：改札の一部分。\n文字配置：上1行。\n\n020「入口にいる」\n表情：少し退屈な目。\nポーズ・構図：開いた入口のドア枠から半身をのぞかせる。\n小物：ドア枠の一部分。\n文字配置：上1行。\n\n021「どこにいる？」\n表情：探す目。\nポーズ・構図：手を目の上に添え、遠くを探す。\n小物：なし。\n文字配置：上1行。\n\n022「見つけた！」\n表情：目を丸くする。\nポーズ・構図：上体を少し前へ出し、遠方の相手を指す。\n小物：小さな発見の強調線。\n文字配置：上1行。\n\n023「こっちだぞ」\n表情：いたずらなニヤリ。\nポーズ・構図：横へ伸ばした手を、自分の方へ招く。\n小物：短い手招き動線。\n文字配置：上1行。\n\n024「待ってるぞ」\n表情：半目。\nポーズ・構図：屋外ベンチで片足を軽く揺らし、スマホを見る。\n小物：屋外ベンチ・スマホ。\n文字配置：上1行。\n\n025「まだ来ない？」\n表情：不機嫌気味の横目。\nポーズ・構図：時計を見る手を持ち上げ、もう一方を腰へ。\n小物：腕時計。\n文字配置：上2行：まだ／来ない？。\n\n026「先に入ってて」\n表情：落ち着いた目。\nポーズ・構図：店の入口へ向け、手のひらで入店を促す。\n小物：入口・内向き矢印。\n文字配置：上2行：先に／入ってて。\n\n027「席とっとく」\n表情：小さなドヤ顔。\nポーズ・構図：自分の席に座り、隣の空席へ手を置く。\n小物：テーブル端・隣の空椅子。\n文字配置：上1行。\n\n028「行列だ…」\n表情：げんなりした目。\nポーズ・構図：順番待ちの最後尾で肩を落とす。\n小物：列の足元位置マーク3個・仕切りポール。\n文字配置：上1行。\n\n029「混んでる」\n表情：窮屈そうな目。\nポーズ・構図：体をすぼめて両腕を胸前へ寄せる。\n小物：周囲の淡い人型シルエットの抜粋。\n文字配置：上1行。\n\n030「予約してある」\n表情：得意げな細目。\nポーズ・構図：受付カウンターでスマホ画面を提示する。\n小物：カウンター端・予約チェック記号のみのスマホ画面。\n文字配置：上2行：予約／してある。\n\n031「別の店いこ」\n表情：不満から切り替える目。\nポーズ・構図：体を別方向へ向け、次の店を指す。\n小物：小さな店のひさし・方向矢印。\n文字配置：上2行：別の店／いこ。\n\n032「寄り道中」\n表情：いたずらなニヤリ。\nポーズ・構図：進行方向から脇へ曲がり、小さな店をのぞく。\n小物：店のひさし・曲がる動線。\n文字配置：上1行。\n\n033「飲み物買う」\n表情：平静。\nポーズ・構図：自販機のボタンへ手を伸ばす。\n小物：自販機のボタン面だけ。\n文字配置：上2行：飲み物／買う。\n\n034「荷物多すぎ」\n表情：困り目。\nポーズ・構図：左右に買い物袋を抱え、体を傾けて踏ん張る。\n小物：買い物袋を左右に各1個。\n文字配置：上2行：荷物／多すぎ。\n\n035「雨降ってきた」\n表情：上を見る驚き目。\nポーズ・構図：頭の上に手をかざし、雨粒を確認する。\n小物：雨粒数個。\n文字配置：上2行：雨／降ってきた。\n\n036「傘あるぞ」\n表情：余裕のニヤリ。\nポーズ・構図：開いた傘を頭上に持ち、空いた手を腰へ。\n小物：開いた傘1本。\n文字配置：上1行。\n\n037「そろそろ帰る」\n表情：気だるい目。\nポーズ・構図：バッグを持ち上げ、体を帰る方向へ向ける。\n小物：手持ちバッグ。\n文字配置：上2行：そろそろ／帰る。\n\n038「帰り道」\n表情：落ち着いた目。\nポーズ・構図：横向きに歩き、背後に夕方の小さな光を添える。\n小物：道線・夕方を示す小さな円。\n文字配置：上1行。\n\n039「帰宅！」\n表情：安堵した目。\nポーズ・構図：家の玄関でバッグを下ろす。\n小物：玄関ドアの抜粋・バッグ。\n文字配置：上1行。\n\n040「気をつけてな」\n表情：真剣な目。\nポーズ・構図：小さな段差を指し、相手へ注意を促す。\n小物：足元の低い段差1個。\n文字配置：上2行：気を／つけてな。\n\n## 8. 代表4枚を先行制作・検品\n018 着いたぞ：通常表情・全身・顔の再現性。\n013 道まちがえた：大きな方向転換・手足の整合。\n036 傘あるぞ：大きな小物・顔とのバランス。\n015 電車遅れてる：長めの文字・2行配置・縮小視認性。\n4枚は正式40枚に含める。別の説明用プレビューとして生成しない。\n4枚でキャラ再現・文字・透明・余白・縮小視認性を検品し、合格した条件を残り36枚に展開する。\n合格済みを再生成しない。正式条件の範囲では追加承認を求めず継続する。\n目標は初回40/40合格・修正0。目標達成のために検品を省略したり不合格を合格扱いしたりしない。\n\n## 9. 生成節約・修正\n生成は正式40枚＋必要なtab＋不合格画像の修正のみ。\n説明・装飾・宣伝・特集参加用の別画像は生成しない。\n計画・構図・代表4枚の選定理由・検品・修正履歴は文章で報告する。\n一覧確認が必要な場合は既存PNGを並べるだけにし、一覧自体を新規画像生成しない。\ntabは合格済み画像の顔を適切に切り出し・縮小して作れる場合は再利用する。目鼻口・毛並みを描き直さない。品質上成立しなければ正式基準に沿って必要なtabを制作する。\n不合格だけを修正し、原因・変更点・再検品結果を記録する。上限・機能不足で継続不可なら完成分、未完成分、再開に必要な情報を報告する。\n\n## 10. 全数検品\n全40枚を正式フレーズと1枚ずつ照合する。\n顔、白いM字口元、目と鼻、色、毛並み、体型、頬、靴なし、性格を確認。\n手足の増殖・欠損・持ち方の不自然さ・小物の壊れ・キャラと文字の切れを確認。\n各画像の指定サイズ、PNG正常読込、RGB＋alpha、dpi、容量をプログラムで確認。\n透明はalpha値で確認し、チェック模様・白い矩形・背景の焼き込みがないことを目視でも確認。白い目と口元を誤って抜かない。\n白・黒・チェック背景、180pxと90px縮小表示で文字・表情・小物を確認。\n暗い体の境界が背景へ溶けないか確認。顔の造形や色を勝手に明るくせず、必要なら切れない輪郭・適切な縁処理で視認性を保つ。\n過去2弾と本弾内の最終構図・演出照合を行う。似た場面は主動作と用途の区別が読み取れるか確認。\n合格・不合格・未確認を明確に区別。検品記録を残す。\n\n## 11. tab.png\n96×74px。文字なし、単独のこげもちの顔を中心に、基準の顔と毛並みを明確に見せる。\n暗い背景と明るい背景、縮小表示で視認性を確認する。\n透明・サイズ・dpi・容量・欠けを確認する。\n別キャラ化・靴・不要小物・タイトル文字は禁止。\n\n## 12. ZIP作成と実展開検証\n完成ZIP名：Kogemochi_Vol3_FINAL.zip\nZIP直下に001.png〜040.pngとtab.pngの41ファイルのみ。\n指示書、検品記録、登録情報、一覧画像、隠しファイル、サブフォルダは入れない。\n完成ZIPを別の空フォルダへ実際に展開して、次を検証：\n41件、正式ファイル名、欠番なし、重複なし、PNG正常読込、画像サイズ、透明、dpi、容量。\n展開前後の各41ファイルのSHA-256一致を確認する。\nZIPの容量20MB以下を確認する。\nZIPの実展開が未完了なら完成品として報告しない。\nダウンロード先が本当に存在することを確認し、本文に完成ZIPのリンクを提示する。\n画像・ZIP・検品記録・登録情報は利用可能な永続保存機能で保存する。リンク表示だけを保存完了と扱わない。\n\n## 13. LINE登録情報\n以下はこの弾用の登録文。納品時、タイトル・説明文を日本語/英語それぞれ独立したコピー用ブロックで本文に表示する。登録情報ファイルだけで代替しない。\n日英タイトル40単位以内、説明160単位以内。全角を2単位として検証し、実際の画面で受理されたとは検証前に書かない。\n英語タイトルにスマートクォート・特殊アポストロフィを使わない。\n\n日本語タイトル：\nこげもちのおでかけ連絡\n\n英語タイトル：\nKogemochi Outing Updates\n\n日本語説明文：\nちょっと生意気なこげもちのおでかけ連絡絵文字。出発・移動・待ち合わせ・寄り道・帰宅まで、毎日の連絡に使えます。\n\n英語説明文：\nCool and cheeky Kogemochi keeps you posted! Handy emojis for heading out, travel, meeting up and getting home.\n\nクリエイター名：\nMofuMofu Studio\n\nユーザー指定のコピーライト表記（©付き・必ずコピー用に提示）：\n© MofuMofu Studio\n\n登録欄用の英数字表記（別ブロックで併記）：\nMofuMofu Studio\n\n公式ガイドラインのコピーライト欄は50文字以内・英数字のみ。©付きの表記は省略せず表示しつつ、登録欄用表記とは用途を分ける。©が実際に受理されると未確認で断定しない。\n\nAI使用：あり\n写真使用：なし\n販売開始方式：手動\n販売エリア・販売価格：ユーザーの既存設定が確認できればそれを尊重し、不明なら未確認とする。未確定の価格を正式決定しない。\nメイン画像候補4枚：018・013・036・015。完成後に視認性を確認し、正式40枚から選択する。別画像を生成しない。\n公式登録サイト：https://creator.line.me/\n完成後の販売ページURLは登録・公開後に確認できたものだけを提示する。未登録時は架空URLを作らない。\n\n## 14. 特集調査と今回の判定\n確認日：2026-10-11（日本時間）。\n確認した募集中企画：「文字がメイン！リアクション絵文字特集」\n公式：https://note.com/line_cm/n/ne0eb91b42d0f\n審査受付：2026-09-02 11:00〜2026-11-02 10:59（日本時間）。早期終了の可能性あり。\n特集期間：2026-10-14 11:00〜2026-12-14 10:59（日本時間）。\n新規の絵文字8〜40個、日本居住、190円以上、8個以上がリアクションにも使いやすい文字中心のデザインであること等が条件。\nキャラ・表現は自由だが、テーマ不適合でリジェクトされる可能性がある。\n今回の判定：現行は連絡用途・キャラ中心の構図。文字中心の8枚を満たす実画像は未制作で、リアクション用途の適合も未確認。特集参加を前提にせず通常制作を推奨する。\n特集向けに正式フレーズを変更したり、文字中心へ8枚を無断で作り替えたりしない。参加チェックは操作しない。\n納品時に公式情報を再確認し、企画名・募集期限・主要条件・適合理由・未確認点・推奨を短く本文に出す。\n他の特集がある可能性を排除せず、確認範囲と取得できなかった条件を明示する。「特集なし」「参加確実」と根拠なく報告しない。\n採用される保証はしない。\n\n## 15. 納品本文の必須順序\n1. 正式タイトル、完成/未完成の正確な状態。\n2. 完成ZIPの直接ダウンロードリンク。\n3. 全40枚・tab・ZIP実展開の検証結果。初回合格数、修正数、残る未確認点を短く。\n4. 日本語タイトル、英語タイトル、日本語説明文、英語説明文を各独立コピー用ブロック。\n5. クリエイター名、©付きコピーライト、登録欄用コピーライトを各独立コピー用ブロック。\n6. Work制作チャット名と企画Chat名を各独立コピー用ブロック。\n7. 代表4枚の番号と採用理由を短く。\n8. 特集調査結果。\n9. 公式登録サイト https://creator.line.me/ のクリック可能なリンク。\n10. 登録・申請・販売の実施/未実施と、ユーザーの次の操作。\n完成通知は制作を完了したこのチャット内で明確に行う。利用できない別チャットへの自動共有・通知・販売操作を完了と報告しない。\n長い進捗・不要な画像・装飾を減らし、スマホで読める納品にする。\n\n## 16. 引き継ぎと現在の状態\n正式確定：タイトル「こげもちのおでかけ連絡」、テーマ「おでかけ連絡」、上記001〜040、靴なし、甘えん坊なし、直接制作・予約なし。\n事前設計済み：全40枚の表情・ポーズ・構図・小物・文字配置・領域、代表4枚、過去2弾照合と差別化方針。\n未着手：第3弾画像生成、正式基準画像を用いた先行検品、残り36枚制作、全数検品、tab、ZIP、完成納品。\n登録・申請・販売：未実施。\nこの指示書作成は画像制作の完了ではない。\nこの指示書とユーザー直接添付の正式基準画像を新しい第3弾Workに渡して制作する。\n正式条件に沿う細かなレイアウト調整や不合格修正は自動継続。正式フレーズ・キャラクター設定の変更が必要な場合のみ、その具体的理由と案をユーザーへ確認する。\n品質を妥協せず、未完成・未確認を正直に報告する。\n\n最重要原則：\n勝手に変えない。無駄に止まらない。品質を落とさない。完成を偽らない。\n1弾1Work。命名統一。二重制作防止。合格済み再生成禁止。ZIP実展開検証。登録情報は本文でコピー可能。\n\n"}, {"vol": 4, "product": "こげもちの裏の顔", "version": "Ver.4.5", "value": "# 🐻 MofuMofu Studio｜こげもち第4弾\n# Work用・完全統合制作マスタープロンプト Ver.4.5\n更新日：2026-10-12\n\n## 制作開始\n制作開始。このプロンプトと必要な正式基準画像の受領をもって、確定条件に従い代表4枚の制作・検品から全40枚、tab.png、ZIP実展開検証、登録情報と完成納品まで継続する。開始の再確認は不要。必要な正式基準がない、正式フレーズ未確定、重要条件の矛盾がある場合はその不足事項だけを確認する。審査申請・販売開始は含めない。\n\n## 正式案件\nキャラ：こげもち／第4弾\n正式タイトル：こげもちの裏の顔\nテーマ：裏の顔\nコンセプト：本音と建前・悪だくみ・隠された心の声・強がり・照れ隠し。表情と本音のギャップを中心とする。\nChat：🐻こげもち｜第4弾｜裏の顔｜Chat\nWork：🔴制作部隊｜こげもち｜第4弾｜裏の顔｜Work\n完成ZIP：Kogemochi_Vol4_FINAL.zip\n1キャラ・1弾・1Work、予約なし、二重制作禁止。\n\n## 正式キャラ基準\n今回添付2枚を最優先。1枚目＝顔・毛並み、2枚目＝全身・ポーズ。黒〜チャコールグレーの丸いモコモコ体、白丸目、小黒瞳と鼻、白いM字口元、淡いピンク頬、短い丸い手足、靴なし。腹部は全身基準に従う。\n性格はクール・生意気・お調子者・いたずら好き・ひそかな悪だくみ・素直でない。\n甘えん坊、過度なかわいこぶり、攻撃的演出、靴・耳追加、口元・毛並みの改変、別キャラ化禁止。基準画像の白背景・チェック柄を完成画像に描かない。\n\n## 重複管理\n第1弾「生意気リアクション」、第2弾「サボり生活」、第3弾「おでかけ連絡」の文字・意味・用途・表情・ポーズ・構図・小物・演出と比較。Chatの照合を尊重し、完成後に実画像比較も行う。未取得資料は未確認と明記。\n同じ感情だけで不合格にせず、用途と主動作まで同じなら不合格。第4弾の中心は表向きと内心の差。単純な生意気反応、ぐうたら、移動連絡の再制作を避ける。\n\n## 正式40フレーズと構図\n001〜040は正式固定済み。番号・フレーズの無断変更禁止。用途・差別化の詳細はユーザー提出Ver.4.4を継承する。次は同書の構図指定の要約。\n\n001｜そうですね〜\n半身、作り笑顔と冷静な目、片手を軽く上げる。小物なし。\n\n002｜（また始まった）\n顔アップ、半目と横目、視線を外す。ため息線。\n\n003｜いいと思う\n半身、目の笑っていない笑顔、小さな笑顔の仮面1個。\n\n004｜（圧がすごい）\n半身、困り目、のけぞる。迫る圧線。\n\n005｜おまかせします\n半身、礼儀正しい作り笑顔、軽いお辞儀。汗1粒。\n\n006｜（ムリだろ）\n顔アップ、冷めた無表情、首振り印象。小さな×。\n\n007｜いま心読んだ？\n半身、目を見開き口元を押さえる。驚き線。\n\n008｜（覚えてろよ）\n半身、目の笑っていない笑顔、手を後ろ。小さな黒炎。\n\n009｜それはそれで\n半身、平静な細目、片手を横へ流す。小物なし。\n\n010｜（どうでもいい）\n顔アップ、遠い目。小さな抜け魂。\n\n011｜計画どおり\n半身、不敵な笑み、作戦メモを見る。\n\n012｜いいこと思いついた\n顔アップ、悪い笑顔、片手を上げる。電球。文字2行可。\n\n013｜罠だったのさ\n全身、得意げに指差し。簡略落とし穴、非攻撃的。\n\n014｜裏で仕込み中\n斜め後ろ、顔を見せ集中した細目。小さな道具箱。\n\n015｜次の一手\n半身、真剣な目、チェス駒を持ち上げる。\n\n016｜こっそり作戦\nかがんで作戦地図を広げる。いたずら目。\n\n017｜こいつは使える\n半身、輝く目、虫眼鏡で対象を観察。\n\n018｜裏では順調\n半身、表は無表情、胸元で小さく拳。進行チェック表。\n\n019｜計算外だ！\n全身、焦り丸目、後ろへのけぞる。飛ぶ作戦メモ。\n\n020｜見えてるぞ\n顔アップ、鋭い視線と片目強調。観察線。\n\n021｜（実はうれしい）\n半身、真顔と胸元の小さな拳。内心キラキラ。\n\n022｜（くやしい！）\n半身、作り笑顔、握った拳。小さな感情炎。\n\n023｜（いいなぁ）\n半身斜め、羨望の横目、少し曲がる口。憧れキラキラ。\n\n024｜（照れる…）\n半身、赤面、顔と目をそらす。頬強調線。\n\n025｜（期待してた）\n半身、残念目、前のめり。小さなプレゼント箱。\n\n026｜（ドキドキ）\n顔を大きく、平静を装う丸目。鼓動線、恋愛に偏らない。\n\n027｜（気になる）\n壁の端から集中した横目でのぞく。好奇心の表現。\n\n028｜（調子のるな）\n半身、冷たいジト目、低めの腕組み。小さな警告。\n\n029｜（こわっ）\n半身、強がる丸目、少し後退。震え線。\n\n030｜（顔がゆるむ）\n顔アップ、真顔から口元がゆるむ。頬変化線。\n\n031｜知ってたし\n半身、得意げな強がり、高めの腕組み。小物なし。\n\n032｜（認めてる）\n半身斜め横、視線外しつつ納得。小さな星。\n\n033｜そこでそれ!?\n全身前のめり、驚き目。短い衝撃線。\n\n034｜顔に出てた？\n半身、焦りと赤面、頬を押さえる。汗1粒。\n\n035｜図星かも…\n半身、気まずい目、顔をそらす。沈黙の点。\n\n036｜平気なフリ\n半身、作り笑顔、親指を立てる。冷や汗。\n\n037｜余裕だし！\n全身、胸を張り自信顔。足元の震え線。\n\n038｜わざとだし！\n全身、転びかけから開き直りポーズ。落とした小物1個。\n\n039｜心の中で拍手\n半身真顔、胸の中の拍手を内面演出で表現。\n\n040｜本当はありがとな\n背中を向け少し振り返り、赤面と視線外し。小さな感謝マーク。文字2行。\n\n\n## 事前設計・レイアウト\n全40枚について用途、表情、自然な手足、構図、小物、文字、表示領域、過去/同弾重複、180px視認性と透過を生成前に確認。\n文字は上部25〜30%目安、黒系太字＋白フチ。キャラ中央〜下部。欠け防止の最小限の透明余白。長文は2行可、文字内容・括弧・句読点は維持。文字後入れは品質上必要なら可、商用利用に適したフォントを使う。同じ腕組み・顔アップは視線・手位置・角度・内面演出で区別。\n\n## 最新仕様\n制作開始時にLINE公式仕様を確認。001.png〜040.pngは180×180px、tab.pngは96×74px。透明PNG、RGB/RGBA、72dpi以上、各1MB以下、ZIP20MB以下。白四角・チェック模様・風景禁止。\n\n## 代表4枚と全数検品\n003仮面、013全身と落とし穴、026顔と感情、040振り返りと長文を先行。正式40枚へ算入、合格済みは再生成しない。毛並み、白丸目、小黒瞳・鼻、M字口元、頬、体型、手足、小物、文字サイズ・配置・色・フチ、透過、縮小を確認し残り36枚へ適用。\n初回40/40・修正0目標、検品省略禁止。不合格のみ修正・再検品。\n全40枚＋tabを白・黒・チェック背景、180px・90pxで確認。文字一致・誤字・視認性・キャラ一致・毛並み・目鼻口・手足・靴なし・小物正常・余白・透過・サイズ・PNG・dpi・容量・過去重複を全数確認。未確認を合格と報告しない。\n\n## tab\n文字・小物なし。こげもちの顔を大きく見やすく。基準または合格画像を適切に再利用できれば優先、不要な追加生成禁止。\n\n## ZIP\nZIP直下に001.png〜040.pngとtab.pngのみ計41ファイル。余分な画像・レポート・隠しファイルなし。別フォルダへ実展開し、欠番・重複・読込・PNG・サイズ・透過・容量・展開前後一致を確認、SHA-256推奨。未検証ZIPを完成品として提示しない。\n\n## LINE登録情報\n各項目を本文で独立してコピーできる形にする。ファイルだけで代替しない。\n日本語タイトル：こげもちの裏の顔\n英語タイトル：Kogemochi's Hidden Side\n日本語説明文：クールなこげもちの裏の顔が見えちゃう！本音と建前、悪だくみ、心の声、照れ隠しまで。ちょっと生意気な日常リアクション絵文字です。\n英語説明文：Discover Kogemochi's hidden side! Cheeky thoughts, secret plans, hidden feelings and funny everyday reactions.\nクリエイター名：MofuMofu Studio\nコピーライト：© MofuMofu Studio\n登録欄用コピーライト：MofuMofu Studio\n特殊アポストロフィ禁止、英語は安全な半角記号。最新文字数規定を確認。登録画面未確認なら受理済みと断定しない。\n\n## 特集\n制作開始時と納品時に募集中の特集名・募集期間・対象・参加条件・適合性を調査。特集に合わせ正式フレーズを無断変更禁止。不適切なら通常登録推奨。参加操作は別途ユーザー許可が必要。\n\n## 節約・納品\n正式40枚、必要なtab、NG修正以外の画像生成禁止。説明・装飾・宣伝・不要試作・合格再生成・二重作業禁止。一覧は既存PNGを並べる。\n本文に正式タイトル、制作数、初回合格数、修正枚数、最終合格数、tab結果、ZIP実展開結果、完成ZIPリンク、日英登録情報、コピーライト、特集結果、メイン候補4枚、未確認事項、次のユーザー操作を提示。LINE登録・申請・販売開始は別途許可なしに実施しない。\n\n## 今後の共通追加\n今後作成するWork制作指示書にも冒頭の「制作開始」を含める。正式フレーズと必須基準が揃っている場合に開始の再確認をしない。既存他チャットやプロジェクト設定を直接編集したとは報告しない。\n\n勝手に変えない。無駄に止まらない。品質を落とさない。完成を偽らない。\n\n"}];
+let v52BatchPlan=[];
+function v52BatchToggle(){const ok=document.getElementById('v52BatchBackup').checked&&document.getElementById('v52BatchVerify').checked&&storageReady&&v52BatchPlan.some(x=>!x.skip&&document.getElementById('v52BatchCheck'+x.vol)?.checked);document.getElementById('v52BatchRun').disabled=!ok;}
+function v52BatchPreview(){
+ const out=document.getElementById('v52BatchResult');
+ v52BatchPlan=v52BatchSources.map(src=>{
+  const products=db.products.filter(p=>p.name===src.product&&p.type==='LINE絵文字');
+  const name='参考制作指示書｜最終版未照合｜'+src.version;
+  const duplicate=products.length===1&&db.items.some(i=>i.product===products[0].id&&i.name===name);
+  return {...src,name,pid:products.length===1?products[0].id:null,skip:products.length!==1||duplicate,reason:products.length!==1?'対応する作品が1件でないためスキップ':duplicate?'同名資料あり・スキップ':''};
+ });
+ const eligible=v52BatchPlan.filter(x=>!x.skip);
+ out.innerHTML='<p>候補：'+v52BatchPlan.length+'件／追加可能：'+eligible.length+'件／スキップ：'+(v52BatchPlan.length-eligible.length)+'件</p>'+v52BatchPlan.map(x=>'<label style="display:block;padding:12px;margin:8px 0;border:1px solid #d7e2df;border-radius:12px"><input type="checkbox" id="v52BatchCheck'+x.vol+'" '+(x.skip?'disabled':'')+' onchange="v52BatchToggle()"> <strong>'+esc(x.product)+'</strong>・'+esc(x.version)+'<br><span class="muted">全文 '+x.value.length+'文字／'+(x.skip?esc(x.reason):'参考指示書・最終版未確認')+'</span></label>').join('')+'<p class="muted">※過去の制作時プロンプトと完全一致するか確認できていません。既存の「Work用・完全統合制作プロンプト Ver.1.0」等とは別名で保存します。</p>';
+ document.getElementById('v52BatchBackup').checked=false;document.getElementById('v52BatchVerify').checked=false;v52BatchToggle();
+}
+function v52BatchCommit(){
+ const plan=v52BatchPlan.filter(x=>!x.skip&&document.getElementById('v52BatchCheck'+x.vol)?.checked);
+ if(!plan.length||!document.getElementById('v52BatchBackup').checked||!document.getElementById('v52BatchVerify').checked||!storageReady)return;
+ if(plan.some(x=>db.products.filter(p=>p.id===x.pid&&p.name===x.product).length!==1||db.items.some(i=>i.product===x.pid&&i.name===x.name))){v52BatchPreview();return alertToast('既存の資料が変更されました。再確認してください')}
+ if(!confirm('最終版未確認の参考指示書 '+plan.length+'件を追加します。既存資料は変更しません。よろしいですか？'))return;
+ const before=JSON.stringify(db);
+ try{for(const x of plan)db.items.push({id:id(),name:x.name,type:'text',value:x.value,imageData:'',product:x.pid,locked:true,created:new Date().toISOString()});if(!persist())throw Error('save');v52BatchPlan=[];document.getElementById('v52BatchResult').textContent='参考指示書 '+plan.length+'件を追加しました。作品フォルダで確認してください。';document.getElementById('v52BatchBackup').checked=false;document.getElementById('v52BatchVerify').checked=false;v52BatchToggle();alertToast('参考指示書を追加しました');}catch(e){db=JSON.parse(before);render();alertToast('保存に失敗しました。データをご確認ください')}
+}
+</script><div id="imagePreview" class="preview-overlay hide" role="dialog" aria-modal="true" aria-label="画像拡大表示"><div class="preview-head"><span id="previewName" class="preview-name"></span><button type="button" onclick="closeImagePreview()" aria-label="拡大表示を閉じる">✕ 閉じる</button></div><div class="preview-body"><img id="previewImage" alt="拡大画像"></div><div class="preview-actions"><button id="previewPrevious" type="button" onclick="stepImagePreview(-1)">‹ 前へ</button><span id="previewCounter"></span><button id="previewNext" type="button" onclick="stepImagePreview(1)">次へ ›</button></div></div><script id="v050-app">
+/* v0.5.0: view-only restructuring, same tsukulog.v035.test and JSON schema. */
+let v5Folder=null;
+const v5OrigRender=render,v5OrigTab=tab,v5OrigSaveProduct=saveProduct;
+function v5ShowSection(name){document.querySelectorAll('main section').forEach(x=>x.classList.toggle('hide',x.id!==name));}
+const V53_SORT_KEY='tsukulog.v53.homeSort';
+let v53Sort='new';
+try{const stored=localStorage.getItem(V53_SORT_KEY);if(['new','old','name'].includes(stored))v53Sort=stored}catch(e){}
+function v53SetSort(value){if(!['new','old','name'].includes(value))return;v53Sort=value;try{localStorage.setItem(V53_SORT_KEY,value)}catch(e){}v5RenderFolders()}
+function v5RenderFolders(){
+ const q=document.getElementById('v5Search').value.trim().toLocaleLowerCase('ja-JP');
+ const typeEl=document.getElementById('v53Type'),sortEl=document.getElementById('v53Sort');
+ const currentType=typeEl.value;
+ const types=[...new Set([...(db.types||[]),...db.products.map(p=>p.type).filter(Boolean)])];
+ typeEl.innerHTML='<option value="">すべての種類</option>'+types.map(t=>`<option value="${esc(t)}">${esc(t)}</option>`).join('');
+ typeEl.value=types.includes(currentType)?currentType:'';
+ sortEl.value=v53Sort;
+ const all=db.products.map((p,i)=>({id:p.id,name:p.name,type:p.type,status:p.status,created:p.created||'',index:i}));
+ const common={id:'',name:'共通資料',type:'共通',status:'',created:'',index:-1};
+ const filtered=all.filter(p=>(!typeEl.value||p.type===typeEl.value)&&p.name.toLocaleLowerCase('ja-JP').includes(q));
+ filtered.sort((a,b)=>{
+  if(v53Sort==='name')return a.name.localeCompare(b.name,'ja');
+  const at=Date.parse(a.created)||0,bt=Date.parse(b.created)||0;
+  const cmp=at-bt||a.index-b.index;
+  return v53Sort==='old'?cmp:-cmp;
+ });
+ const showCommon=!typeEl.value&&common.name.toLocaleLowerCase('ja-JP').includes(q);
+ const visible=showCommon?[...filtered,common]:filtered;
+ document.getElementById('v53Count').textContent=`作品 ${filtered.length}件表示 / 全${all.length}件`;
+ document.getElementById('v5FolderList').innerHTML=visible.map(p=>{
+  const count=db.items.filter(i=>(i.product||'')===p.id).length;
+  return `<div class="v54-folder-row"><button class="v5-folder" type="button" data-folder="${esc(p.id)}"><span class="v5-folder-icon">📁</span><span class="v5-folder-text"><strong>${esc(p.name)}</strong><small>${esc(p.type||'作品')} · 資料 ${count}件${p.status?' · '+esc(p.status):''}</small></span><span aria-hidden="true">›</span></button>${p.id?`<button class="v54-delete-folder" type="button" data-delete-folder="${esc(p.id)}" aria-label="${esc(p.name)}の作品フォルダを削除" title="作品フォルダを削除">🗑</button>`:''}</div>`;
+ }).join('')||'<div class="empty">条件に合う作品がありません</div>';
+ document.querySelectorAll('.v5-folder').forEach(b=>b.addEventListener('click',()=>v5Open(b.dataset.folder)));
+ document.querySelectorAll('.v54-delete-folder').forEach(b=>b.addEventListener('click',()=>v54DeleteFolder(b.dataset.deleteFolder)));
+}
+function v54DeleteFolder(pid){
+  if(!storageReady)return alertToast('保管庫の準備中です');
+  const product=db.products.find(p=>p.id===pid);
+  if(!product)return alertToast('作品フォルダが見つかりません');
+  const attached=db.items.filter(i=>i.product===pid);
+  const message=attached.length
+    ?`「${product.name}」の作品フォルダを削除しますか？\n\n中の資料 ${attached.length}件（保護中の資料を含む）は削除せず「共通資料」へ移動します。\n\n元の作品フォルダへの紐づけは解除されます。バックアップ保存後に実行してください。`
+    :`「${product.name}」の空の作品フォルダを削除しますか？\n\nこの操作は元に戻せません。`;
+  if(!window.confirm(message))return;
+  const before=JSON.stringify(db);
+  db.products=db.products.filter(p=>p.id!==pid);
+  for(const item of attached)item.product='';
+  if(!persist()){
+    db=JSON.parse(before);render();alertToast('削除に失敗しました。元のデータを維持しました');return;
+  }
+  v5RenderFolders();
+  alertToast(attached.length?`作品フォルダを削除し、資料${attached.length}件を共通資料へ移動しました`:'作品フォルダを削除しました');
+}
+function v5Home(){v5Folder=null;hideItemForm();v5ShowSection('v5home');v5RenderFolders();window.scrollTo(0,0)}
+function v5Settings(){v5Folder=null;v5OrigTab('backup');window.scrollTo(0,0)}
+function v51PrepareOptions(){
+ const details=document.getElementById('productCustom'),launch=document.querySelector('.v51-options-launch');
+ if(details&&launch&&details.parentElement!==document.getElementById('productForm'))launch.after(details);
+ if(details){details.open=false;document.getElementById('v51OptionsButton').setAttribute('aria-expanded','false');}
+}
+function v51ToggleOptions(){
+ const details=document.getElementById('productCustom');
+ if(!details)return;
+ details.open=!details.open;
+ document.getElementById('v51OptionsButton').setAttribute('aria-expanded',String(details.open));
+ if(details.open){updateCustomOptions();}
+}
+function v5NewFolder(){v5Folder=null;v5OrigTab('products');v5ShowSection('products');document.getElementById('products').classList.add('v5-create');showProductForm();v51PrepareOptions();window.scrollTo(0,0)}
+function v53RenameItem(itemId){
+ const item=db.items.find(x=>x.id===itemId);
+ if(!item)return alertToast('資料が見つかりません');
+ const input=window.prompt('資料名を編集（本文・画像・保護状態は変更しません）',item.name);
+ if(input===null)return;
+ const name=input.trim();
+ if(!name)return alertToast('資料名を入力してください');
+ if(name.length>120)return alertToast('資料名は120文字以内にしてください');
+ if(name===item.name)return;
+ if(db.items.some(x=>x.id!==item.id&&(x.product||'')===(item.product||'')&&x.name===name))return alertToast('同じフォルダに同名の資料があります');
+ const old=item.name;item.name=name;
+ if(!persist()){item.name=old;render();return}
+ alertToast('資料名を変更しました');
+}
+
+function v53ShowRename(){
+ const p=db.products.find(x=>x.id===v5Folder);
+ if(!p)return alertToast('作品を選択してください');
+ const panel=document.getElementById('v53RenamePanel');
+ document.getElementById('v53RenameInput').value=p.name;
+ panel.classList.remove('hide');
+ panel.scrollIntoView({behavior:'smooth',block:'center'});
+ document.getElementById('v53RenameInput').focus({preventScroll:true});
+}
+function v53HideRename(){document.getElementById('v53RenamePanel').classList.add('hide');}
+function v53CommitRename(){
+ const p=db.products.find(x=>x.id===v5Folder);
+ if(!p)return alertToast('作品が見つかりません');
+ const name=document.getElementById('v53RenameInput').value.trim();
+ if(!name)return alertToast('作品名を入力してください');
+ if(name.length>120)return alertToast('作品名は120文字以内にしてください');
+ const normalize=v=>String(v||'').normalize('NFKC').trim().toLocaleLowerCase('ja-JP');
+ if(db.products.some(x=>x.id!==p.id&&normalize(x.name)===normalize(name)&&normalize(x.type)===normalize(p.type)))return alertToast('同じ種類・作品名がすでにあります');
+ if(name===p.name){v53HideRename();return alertToast('作品名は変更されていません')}
+ const previous=p.name;
+ p.name=name;
+ if(!persist()){p.name=previous;render();return}
+ document.getElementById('v5FolderName').textContent=name;
+ v53HideRename();
+ alertToast('作品名を変更しました。保存資料はそのままです');
+}
+function v5Open(pid){
+ v5Folder=pid;
+ v53HideRename();
+ document.getElementById('products').classList.remove('v5-create');
+ v5OrigTab('vault');
+ document.getElementById('vault').classList.add('v5-mode');
+ document.getElementById('v5VaultHeader').classList.remove('v5-hidden');
+ document.getElementById('v5FolderName').textContent=db.products.find(p=>p.id===pid)?.name||'共通資料';
+ document.getElementById('filter').value=pid;
+ document.getElementById('iProduct').value=pid;
+ v5SyncDestination();
+ document.getElementById('vaultSearchV047').value='';
+ hideItemForm();renderItems();window.scrollTo(0,0);
+}
+function v5SyncDestination(){
+ const field=document.getElementById('iProduct');
+ field.value=v5Folder||'';
+ const folderName=db.products.find(p=>p.id===v5Folder)?.name||'共通資料';
+ document.getElementById('v5AutoLocation').textContent='📁 保存先：'+folderName+'（自動設定）';
+}
+function v5Add(){showItemForm();v5SyncDestination();document.getElementById('itemForm').scrollIntoView({behavior:'smooth',block:'start'})}
+function v5Back(){if(v5Folder!==null)v5Open(v5Folder);else v5Home()}
+// v0.5.0 simple add: one form supports text, images, or both.
+const v5SimpleShow=showItemForm;
+showItemForm=function(){v5SimpleShow();document.getElementById('iType').value='mixed';document.getElementById('textInput').classList.remove('hide');document.getElementById('imageInput').classList.remove('hide');};
+const v5SimpleRevise=reviseItem;
+reviseItem=function(itemId){v5SimpleRevise(itemId);document.getElementById('iType').value='mixed';document.getElementById('textInput').classList.remove('hide');document.getElementById('imageInput').classList.remove('hide');};
+// Retain existing item saving/locking/revisions and backup functions.
+render=function(){v5OrigRender();v5RenderFolders();if(v5Folder!==null){const sel=document.getElementById('filter');sel.value=v5Folder;renderItems()}};
+saveProduct=function(){const prior=db.products.length;v5OrigSaveProduct();if(db.products.length>prior){document.getElementById('products').classList.remove('v5-create');v5Home()}};
+tab=function(name){if(name==='vault'&&v5Folder!==null){v5Open(v5Folder);return}if(name==='vault'){v5Home();return}if(name==='home'||name==='products'){v5Home();return}v5Settings()};
+// Clicking a related item is also routed to its folder.
+openProductVault=function(pid,itemId){v5Open(pid);if(itemId){expandedVaultItemId=itemId;renderItems();document.querySelector('[data-vault-item="'+itemId+'"]')?.scrollIntoView({behavior:'smooth',block:'center'})}};
+// Existing revisions invoke tab('vault'): keep the current folder visible.
+const v5OriginalRevise=reviseItem;
+reviseItem=function(itemId){const item=db.items.find(i=>i.id===itemId);if(!item)return;v5Folder=item.product||'';v5Open(v5Folder);v5OriginalRevise(itemId);v5SyncDestination()};
+// After restoration, the existing handler calls render(); folder listing is refreshed.
+document.getElementById('vault').prepend(document.getElementById('v5VaultHeader'));
+document.querySelector('footer').textContent='つくログ v0.5.4 作品フォルダ削除テスト版・個人利用向け';
+v5Home();
+</script><style id="v050-search-cleanup-css">
+/* Show search stats/actions only while searching within a folder. */
+#vault.v5-mode .v5-subheading{display:none!important}
+#vault.v5-mode .vault-search-foot-v047[hidden]{display:none!important}
+#vault.v5-mode .vault-search-v047{margin-bottom:8px!important;padding-bottom:3px!important}
+</style>
+<style id="v050-tap-menu-css">
+#vault.v5-mode .v5-tap-menu{position:relative;flex:none}
+#vault.v5-mode .v5-tap-trigger{appearance:none;display:flex;align-items:center;justify-content:center;width:44px;height:44px;border:0;border-radius:50%;background:#f1f6f4;color:#294f49;letter-spacing:2px;font-size:22px;font-weight:700;cursor:pointer}
+#vault.v5-mode .v5-tap-trigger[aria-expanded="true"]{background:#dceae6}
+#vault.v5-mode .v5-tap-content{position:absolute;top:calc(100% + 6px);right:0;z-index:20;width:min(245px,calc(100vw - 85px));padding:7px;border:1px solid #d8e5e1;border-radius:13px;background:#fff;box-shadow:0 9px 22px rgba(28,65,57,.15)}
+#vault.v5-mode .v5-tap-content[hidden]{display:none!important}
+#vault.v5-mode .v5-tap-content .btn{display:block;width:100%;border:0;border-radius:8px;min-height:44px;text-align:left;font-size:14px;background:#fff;color:#263e3c;padding:10px 12px}
+#vault.v5-mode .v5-tap-content .btn.warn{background:#fff7f5;color:#ab554b}
+#vault.v5-mode .v5-tap-trigger:focus-visible{outline:2px solid #376b64;outline-offset:2px}
+
+/* v0.5.0 - three-dot menu: labels left, consistently sized icons right */
+#vault.v5-mode .v5-tap-content .btn.v5-menu-item {display:flex;align-items:center;justify-content:space-between;gap:14px;text-align:left;width:100%;}
+#vault.v5-mode .v5-menu-item .v5-menu-icon{width:18px;height:18px;flex:0 0 18px;color:#52756e;}
+#vault.v5-mode .v5-menu-item.warn .v5-menu-icon{color:#ab554b;}
+#vault.v5-mode .v5-tap-content .v5-menu-item + .v5-menu-item{border-top:1px solid #edf1ef;border-radius:0;}
+</style>
+<script id="v050-tap-menu-handlers">
+function v5CloseActionMenus(except){
+  document.querySelectorAll('#vault.v5-mode .v5-tap-menu').forEach(function(menu){
+    if(menu===except)return;
+    var btn=menu.querySelector('.v5-tap-trigger'), content=menu.querySelector('.v5-tap-content');
+    if(btn)btn.setAttribute('aria-expanded','false');
+    if(content)content.hidden=true;
+  });
+}
+function v5ToggleActionMenu(event,button){
+  event.preventDefault();event.stopPropagation();
+  var menu=button.closest('.v5-tap-menu'), content=menu.querySelector('.v5-tap-content');
+  var shouldOpen=content.hidden;
+  v5CloseActionMenus();
+  content.hidden=!shouldOpen;
+  button.setAttribute('aria-expanded',String(shouldOpen));
+}
+document.addEventListener('click',function(event){
+  if(!event.target.closest('#vault.v5-mode .v5-tap-menu'))v5CloseActionMenus();
+});
+document.addEventListener('keydown',function(event){if(event.key==='Escape')v5CloseActionMenus();});
+
+/* v0.5.0 restoration safety: replace the legacy image-aware override with one confirmed path. */
+const oldResetRestorePreview=resetRestorePreview;
+resetRestorePreview=function(){oldResetRestorePreview();const report=document.getElementById('safeRestoreCheck');if(report)report.textContent='';};
+function safeValidateRestore(d){
+ if(!d||d.format!=='tsukulog.v1'||!Array.isArray(d.products)||!Array.isArray(d.items))throw Error('バックアップ形式が正しくありません');
+ if(!d.products.length&&!d.items.length)throw Error('商品・資料が0件のバックアップは復元できません');
+ if(d.types!==undefined&&(!Array.isArray(d.types)||!d.types.every(x=>typeof x==='string')))throw Error('種類のデータが不正です');
+ if(d.statuses!==undefined&&(!Array.isArray(d.statuses)||!d.statuses.every(x=>typeof x==='string')))throw Error('進捗のデータが不正です');
+ const ps=new Set(),is=new Set(),imageIds=new Map();let count=0;
+ for(const p of d.products){if(!p||typeof p.id!=='string'||!p.id||typeof p.name!=='string'||ps.has(p.id))throw Error('商品IDまたは商品名に問題があります');ps.add(p.id)}
+ for(const it of d.items){
+  if(!it||typeof it.id!=='string'||!it.id||is.has(it.id)||typeof it.name!=='string'||typeof it.value!=='string'||!['text','image','mixed'].includes(it.type))throw Error('資料データに問題があります');
+  is.add(it.id);
+  if(it.product&&!ps.has(it.product))throw Error('資料の保存先が存在しません');
+  const images=Array.isArray(it.images)?it.images:[];
+  if(it.images!==undefined&&!Array.isArray(it.images))throw Error('画像一覧が不正です');
+  for(const im of images){
+   if(!im||typeof im.id!=='string'||!im.id||typeof im.data!=='string'||!/^data:image\/(?:png|jpeg|webp);base64,[A-Za-z0-9+/]+={0,2}$/.test(im.data))throw Error('画像データが不正または欠落しています');
+   if(imageIds.has(im.id)&&imageIds.get(im.id)!==im.data)throw Error('画像IDが重複しています');
+   imageIds.set(im.id,im.data);count++;
+  }
+  if(it.type==='image'&&images.length===0&&!getImages(it).length)throw Error('画像資料に画像がありません');
+ }
+ return {products:d.products.length,items:d.items.length,images:count};
+}
+// Preview is read-only; never mutates IndexedDB or localStorage.
+previewImport=async function(){
+ resetRestorePreview();const f=$('importFile').files[0];if(!f)return alertToast('JSONファイルを選択してください');
+ let d,c;try{d=JSON.parse(await f.text());c=safeValidateRestore(d)}catch(e){return alertToast('安全検査に失敗：'+e.message)}
+ pendingRestore={d,file:f};const before=dataCounts(db),p=$('restorePreview');
+ p.className='safe-panel';p.innerHTML=`<strong>復元前の比較・安全検査合格</strong><p>現在：${countText(before)}</p><p>復元後：${countText(c)}</p><p>ファイル：${esc(f.name)}（${Math.round(f.size/1024)} KB）</p><p>画像の埋め込みデータ・保存先・IDを検査しました。現在のデータは変更していません。</p><p><strong>⚠ 復元を実行すると現在の登録内容を置き換えます。</strong></p>`;
+ $('restoreAgreeLabel').classList.remove('hide');$('restoreExecute').classList.remove('hide');updateRestoreButton();
+};
+importData=async function(){
+ if(!storageReady)return alertToast('画像保管庫の準備が終わっていません');
+ if(!pendingRestore||!$('restoreAgree').checked||$('restoreExecute').disabled)return alertToast('先にファイル内容を確認してください');
+ const f=$('importFile').files[0];if(!f||f!==pendingRestore.file)return alertToast('ファイルが変更されました。再確認してください');
+ let fresh,counts;try{fresh=JSON.parse(await f.text());counts=safeValidateRestore(fresh)}catch(e){resetRestorePreview();return alertToast('安全検査に失敗：'+e.message)}
+ const before=dataCounts(db);
+ if(!confirm(`復元前：${countText(before)}\n復元後：${countText(counts)}\n\n現在のデータを置き換えます。続けますか？`))return;
+ if(!confirm('最終確認：この操作は元に戻せません。バックアップを保存済みですか？'))return;
+ $('restoreExecute').disabled=true;
+ const old=db;
+ try{
+  const next={products:fresh.products,items:fresh.items,types:fresh.types||db.types,statuses:fresh.statuses||db.statuses};
+  const writes=[];
+  for(const it of next.items){const imgs=getImages(it);it.images=imgs;for(const im of imgs)writes.push([im.id,im.data]);}
+  // Keep a complete snapshot of overwritten IndexedDB keys before changing them.
+  // On a failure after image writes, restore old values and delete newly inserted keys.
+  const distinct=[...new Map(writes).keys()];
+  const snapshot=distinct.length?new Map(await imageTransaction(distinct.map(key=>[key,undefined]),'readonly')):new Map();
+  let imagesWritten=false;
+  try{
+   if(writes.length){await imageTransaction(writes);imagesWritten=true;}
+   db=next;
+   if(!persist())throw Error('メタデータを保存できません');
+  }catch(writeError){
+   db=old;
+   if(imagesWritten){
+    try{await imageRollbackTransaction(distinct,snapshot)}
+    catch(rollbackError){
+     render();alertToast('復元失敗：画像の巻き戻しも失敗しました。別途保存したJSONを維持し、再操作しないでください');
+     $('restoreExecute').disabled=true;
+     return;
+    }
+   }
+   throw writeError;
+  }
+  resetRestorePreview();updateBackupSummary();alertToast('復元しました');
+ }catch(e){db=old;render();alertToast('復元できませんでした。元の登録データを維持しました');$('restoreExecute').disabled=false;}
+};
+function imageRollbackTransaction(keys,snapshot){
+ return new Promise((resolve,reject)=>{
+  const tx=imageDatabase.transaction('images','readwrite'),store=tx.objectStore('images');
+  keys.forEach(key=>snapshot.get(key)===undefined?store.delete(key):store.put(snapshot.get(key),key));
+  tx.oncomplete=()=>resolve();tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error);
+ });
+}
+
+// v0.5.2 safe additive project importer (metadata only, explicitly trial)
+let v52Candidate=null;
+function v52Key(p){return (p.name||'').normalize('NFKC').trim().toLocaleLowerCase('ja-JP')+'|'+(p.type||'').normalize('NFKC').trim().toLocaleLowerCase('ja-JP')}
+function v52Toggle(){document.getElementById('v52Run').disabled=!(v52Candidate&&document.getElementById('v52Agree').checked&&storageReady)}
+async function v52Preview(){
+ const box=document.getElementById('v52Result'),file=document.getElementById('v52File').files[0];
+ v52Candidate=null;document.getElementById('v52Agree').checked=false;v52Toggle();
+ if(!file){box.textContent='ファイルを選んでください';return}
+ if(file.size>2*1024*1024){box.textContent='ファイル容量が大きすぎます（上限2MB）';return}
+ try{
+  let raw=JSON.parse(await file.text());
+  v52Evaluate(raw,file,box);
+ }catch(e){box.textContent='読み込めませんでした：'+e.message}
+}
+function v52Evaluate(raw,file,box){
+ try{
+  if(raw.format!=='tsukulog.projects-import.v1'||!Array.isArray(raw.projects)||raw.projects.length<1||raw.projects.length>500)throw Error('取り込み専用JSON形式ではありません');
+  const valid=['name','type','status','note'];
+  const projects=raw.projects.map((p,i)=>{
+   if(!p||typeof p!=='object'||Array.isArray(p)||typeof p.name!=='string'||!p.name.trim()||p.name.length>120)throw Error(`${i+1}番目の作品名が不正です`);
+   for(const k of valid)if(p[k]!=null&&typeof p[k]!=='string')throw Error(`${i+1}番目の${k}が不正です`);
+   for(const k of ['type','status'])if(p[k]&&p[k].length>32)throw Error(`${i+1}番目の${k}が長すぎます`);
+   if((p.note||'').length>10000)throw Error(`${i+1}番目のメモが長すぎます`);
+   return {name:p.name.trim(),type:(p.type||'その他').trim()||'その他',status:(p.status||'企画中').trim()||'企画中',note:p.note||''};
+  });
+  const seen=new Set(db.products.map(v52Key)),add=[],skip=[];
+  for(const p of projects){const k=v52Key(p);if(seen.has(k))skip.push(p);else{seen.add(k);add.push(p)}}
+  v52Candidate={file,add,skip};
+  box.textContent=`登録済みの作品：${db.products.length}件\nファイル内：${projects.length}件\n追加予定：${add.length}件\n同名・同種類でスキップ：${skip.length}件\n\n追加候補：\n${add.slice(0,30).map(p=>'・'+p.name+'（'+p.type+'）').join('\n')||'なし'}${add.length>30?'\n…ほか '+(add.length-30)+'件':''}\n\n※画像・ZIP・フレーズは追加されません。`;
+  v52Toggle();
+ }catch(e){box.textContent='読み込めませんでした：'+e.message}
+}
+function v52DemoPreview(){
+ const box=document.getElementById('v52Result');
+ document.getElementById('v52File').value='';
+ v52Candidate=null;document.getElementById('v52Agree').checked=false;v52Toggle();
+ const raw={format:'tsukulog.projects-import.v1',projects:[{name:'こげもちの気まぐれトーク',type:'LINE絵文字',status:'企画中',note:'第9弾。取り込み検証用の仮ステータス。'},{name:'こげもちのデカ文字リアクション',type:'LINE絵文字',status:'企画中',note:'第11弾。取り込み検証用の仮ステータス。'}]};
+ v52Evaluate(raw,null,box);
+}
+function v52Commit(){
+ const plan=v52Candidate,file=document.getElementById('v52File').files[0];
+ if(!plan||(plan.file!==null&&file!==plan.file)||!document.getElementById('v52Agree').checked||!storageReady)return alertToast('ファイルと確認内容を確認してください');
+ if(!plan.add.length)return alertToast('新しく追加する作品がありません');
+ // Recheck duplicates against latest database, including all newly added names in this transaction.
+ const existing=new Set(db.products.map(v52Key)),adding=[];
+ for(const p of plan.add){const k=v52Key(p);if(!existing.has(k)){existing.add(k);adding.push(p)}}
+ if(!adding.length)return alertToast('新しく追加する作品がありません');
+ if(!confirm(`作品 ${adding.length}件を現在の作品一覧へ追加します。\n既存の作品と資料はそのまま保持します。\n\n画像・ZIPは追加されません。続けますか？`))return;
+ const snapshot=JSON.stringify(db);
+ try{
+  const now=new Date().toISOString();
+  for(const p of adding){db.products.push({id:id(),...p,created:now});if(!db.types.includes(p.type))db.types.push(p.type);if(!db.statuses.includes(p.status))db.statuses.push(p.status)}
+  if(!persist())throw Error('保存できませんでした');
+  v52Candidate=null;document.getElementById('v52File').value='';document.getElementById('v52Agree').checked=false;v52Toggle();
+  document.getElementById('v52Result').textContent=`追加完了：${adding.length}件。ホームの作品フォルダで確認してください。`;
+  alertToast(adding.length+'件の作品を追加しました');
+ }catch(e){db=JSON.parse(snapshot);render();alertToast('追加失敗。元データを保持しました')}
+}
+
+// Master ledger v2.1 themes (vol1-11), plus user-confirmed vol12 (2026-10-17).
+function v52KogemochiPreview(){
+ const box=document.getElementById('v52Result');
+ document.getElementById('v52File').value='';
+ v52Candidate=null;document.getElementById('v52Agree').checked=false;v52Toggle();
+ const raw={"format":"tsukulog.projects-import.v1","projects":[{"name":"こげもちの生意気リアクション","type":"LINE絵文字","status":"未確認","note":"こげもち第1弾。テーマ：生意気リアクション。進捗・販売状況は未照合。40フレーズ・画像・ZIPはこの一括取り込みには含まれません。 タイトルのテーマ名はこげもちマスター台帳v2.1に基づく。"},{"name":"こげもちのサボり生活","type":"LINE絵文字","status":"未確認","note":"こげもち第2弾。テーマ：サボり生活。進捗・販売状況は未照合。40フレーズ・画像・ZIPはこの一括取り込みには含まれません。 タイトルのテーマ名はこげもちマスター台帳v2.1に基づく。"},{"name":"こげもちのおでかけ連絡","type":"LINE絵文字","status":"未確認","note":"こげもち第3弾。テーマ：おでかけ連絡。進捗・販売状況は未照合。40フレーズ・画像・ZIPはこの一括取り込みには含まれません。 タイトルのテーマ名はこげもちマスター台帳v2.1に基づく。"},{"name":"こげもちの裏の顔","type":"LINE絵文字","status":"未確認","note":"こげもち第4弾。テーマ：裏の顔。進捗・販売状況は未照合。40フレーズ・画像・ZIPはこの一括取り込みには含まれません。 タイトルのテーマ名はこげもちマスター台帳v2.1に基づく。"},{"name":"こげもちの食いしん坊","type":"LINE絵文字","status":"未確認","note":"こげもち第5弾。テーマ：食いしん坊。進捗・販売状況は未照合。40フレーズ・画像・ZIPはこの一括取り込みには含まれません。 タイトルのテーマ名はこげもちマスター台帳v2.1に基づく。"},{"name":"こげもちの毒舌ツッコミ","type":"LINE絵文字","status":"未確認","note":"こげもち第6弾。テーマ：毒舌ツッコミ。進捗・販売状況は未照合。40フレーズ・画像・ZIPはこの一括取り込みには含まれません。 タイトルのテーマ名はこげもちマスター台帳v2.1に基づく。"},{"name":"こげもちのお仕事モード","type":"LINE絵文字","status":"未確認","note":"こげもち第7弾。テーマ：お仕事モード。進捗・販売状況は未照合。40フレーズ・画像・ZIPはこの一括取り込みには含まれません。 タイトルのテーマ名はこげもちマスター台帳v2.1に基づく。"},{"name":"こげもちの友達トーク","type":"LINE絵文字","status":"未確認","note":"こげもち第8弾。テーマ：友達トーク。進捗・販売状況は未照合。40フレーズ・画像・ZIPはこの一括取り込みには含まれません。 タイトルのテーマ名はこげもちマスター台帳v2.1に基づく。"},{"name":"こげもちの気まぐれトーク","type":"LINE絵文字","status":"未確認","note":"こげもち第9弾。テーマ：気まぐれトーク。進捗・販売状況は未照合。40フレーズ・画像・ZIPはこの一括取り込みには含まれません。 タイトルのテーマ名はこげもちマスター台帳v2.1に基づく。"},{"name":"こげもちの甘くない優しさ","type":"LINE絵文字","status":"未確認","note":"こげもち第10弾。テーマ：甘くない優しさ。進捗・販売状況は未照合。40フレーズ・画像・ZIPはこの一括取り込みには含まれません。 タイトルのテーマ名はこげもちマスター台帳v2.1に基づく。"},{"name":"こげもちのデカ文字リアクション","type":"LINE絵文字","status":"未確認","note":"こげもち第11弾。テーマ：デカ文字リアクション。進捗・販売状況は未照合。40フレーズ・画像・ZIPはこの一括取り込みには含まれません。 タイトルのテーマ名はこげもちマスター台帳v2.1に基づく。"},{"name":"こげもちの冬じたく","type":"LINE絵文字","status":"未確認","note":"こげもち第12弾。テーマ：冬じたく。進捗・販売状況は未照合。40フレーズ・画像・ZIPはこの一括取り込みには含まれません。 第12弾の正式確定は2026-10-17のChat記録による。参照台帳v2.1の第12弾シートは未確定表記のまま。"}]};
+ v52Evaluate(raw,null,box);
+}
+</script><script id="universal-import-code">
+let universalPlan=null;
+function universalToggle(){const b=document.getElementById('universalRun');if(b)b.disabled=!(universalPlan&&document.getElementById('universalAgree').checked&&storageReady);}
+function universalReset(msg){universalPlan=null;document.getElementById('universalAgree').checked=false;document.getElementById('universalResult').textContent=msg;universalToggle();}
+function universalNameKey(n,t){return String(n).normalize('NFC').trim()+'\u001f'+String(t).normalize('NFC').trim();}
+async function universalPreview(){
+ const file=document.getElementById('universalFile').files[0];universalReset('ファイルを検査しています…');
+ if(!file)return universalReset('JSONを選択してください。');
+ if(file.size>1000000||!/\.json$/i.test(file.name))return universalReset('JSONファイル・1MB以下にしてください。');
+ let data;try{data=JSON.parse(await file.text())}catch{return universalReset('JSONの解析に失敗しました。')}
+ if(!data||data.format!=='tsukulog.universal-import.v1'||!Array.isArray(data.products)||!Array.isArray(data.resources))return universalReset('対応していない形式です。指定の共通取り込み形式を使ってください。');
+ if(data.products.length>100||data.resources.length>300)return universalReset('件数が多すぎます。作品100件、資料300件以下に分割してください。');
+ const valid=(s,max)=>typeof s==='string'&&s.trim().length>0&&s.length<=max;
+ const optional=(s,max)=>s===undefined||(typeof s==='string'&&s.length<=max);
+ const products=[],resources=[],all=new Map(),existing=new Map(),duplicateProduct=new Set(),duplicateResource=new Set();
+ for(const p of db.products)existing.set(universalNameKey(p.name,p.type),p);
+ for(const p of data.products){
+  if(!p||!valid(p.name,120)||!valid(p.type,60)||!optional(p.status,60)||!optional(p.note,5000))return universalReset('作品情報に不正な項目があります。');
+  const key=universalNameKey(p.name,p.type);if(duplicateProduct.has(key))return universalReset('取り込みファイルに同じ作品が複数あります。');duplicateProduct.add(key);
+  if(!existing.has(key)){products.push({name:p.name.trim(),type:p.type.trim(),status:(p.status||'企画中').trim()||'企画中',note:p.note||''});all.set(key,true);}
+ }
+ const counts={skipProducts:data.products.length-products.length,skipResources:0};
+ for(const r of data.resources){
+  if(!r||!valid(r.productName,120)||!valid(r.productType,60)||!valid(r.name,120)||!valid(r.text,120000))return universalReset('資料に不正な項目があります（本文12万文字以下）。');
+  const key=universalNameKey(r.productName,r.productType), rk=key+'\u001e'+r.name.trim();
+  if(!existing.has(key)&&!all.has(key))return universalReset('資料「'+r.name+'」の保存先作品が見つかりません。');
+  if(duplicateResource.has(rk))return universalReset('取り込みファイルに同名資料が重複しています。');duplicateResource.add(rk);
+  const p=existing.get(key);
+  if(p&&db.items.some(i=>i.product===p.id&&i.name===r.name.trim()))counts.skipResources++;
+  else resources.push({productName:r.productName.trim(),productType:r.productType.trim(),name:r.name.trim(),text:r.text});
+ }
+ universalPlan={file,products,resources,counts};
+ const lines=['登録済み作品：'+db.products.length+'件','読み込んだ作品：'+data.products.length+'件','追加予定作品：'+products.length+'件 / スキップ：'+counts.skipProducts+'件','読み込んだ資料：'+data.resources.length+'件','追加予定資料：'+resources.length+'件 / 同名スキップ：'+counts.skipResources+'件','',...products.map(p=>'＋ 作品：'+p.name+'（'+p.type+'）'),...resources.map(r=>'＋ 資料：'+r.productName+' ／ '+r.name+'（'+r.text.length+'文字）'),'','既存作品・資料・画像は変更しません。画像・ZIPは取り込み対象外。'];
+ document.getElementById('universalResult').textContent=lines.join('\n');universalToggle();
+}
+async function universalCommit(){
+ const plan=universalPlan;
+ if(!plan||!document.getElementById('universalAgree').checked||!storageReady)return;
+ if(document.getElementById('universalFile').files[0]!==plan.file)return universalReset('ファイルが変わりました。再確認してください。');
+ const current=new Map(db.products.map(p=>[universalNameKey(p.name,p.type),p]));
+ if(plan.products.some(p=>current.has(universalNameKey(p.name,p.type)))||plan.resources.some(r=>{const p=current.get(universalNameKey(r.productName,r.productType));return p&&db.items.some(i=>i.product===p.id&&i.name===r.name)}))return universalReset('登録データが変わりました。もう一度取り込み内容を確認してください。');
+ if(!plan.products.length&&!plan.resources.length)return universalReset('追加対象はありません。');
+ if(!confirm('作品 '+plan.products.length+'件、文章資料 '+plan.resources.length+'件を追加します。既存データは変更しません。実行しますか？'))return;
+ const snapshot=JSON.stringify(db);
+ try{
+  for(const p of plan.products){const obj={id:id(),name:p.name,type:p.type,status:p.status,note:p.note,created:new Date().toISOString()};db.products.push(obj);current.set(universalNameKey(p.name,p.type),obj);if(!db.types.includes(p.type))db.types.push(p.type);if(!db.statuses.includes(p.status))db.statuses.push(p.status)}
+  for(const r of plan.resources)db.items.push({id:id(),name:r.name,type:'text',value:r.text,imageData:'',product:current.get(universalNameKey(r.productName,r.productType)).id,locked:true,created:new Date().toISOString()});
+  if(!persist())throw Error('storage');
+  universalReset('取り込みが完了しました。作品一覧で確認してください。');document.getElementById('universalFile').value='';alertToast('作品と資料を追加しました');
+ }catch(e){db=JSON.parse(snapshot);render();universalReset('保存できませんでした。元のデータを保持しています。');}
+}
+</script></body></html>
